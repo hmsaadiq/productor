@@ -1,38 +1,28 @@
+/* FRONTEND STYLESHEET: This file contains custom CSS for the React frontend, mainly for the App component. */
+/*
+Design Patterns: Uses BEM-like class naming and CSS keyframes for animation.
+Data Structures: CSS classes (strings), keyframes (objects in browser engine).
+Security: No direct security features; CSS is safe from code injection.
+*/
+
+/* Style for the main app container. */
 .App {
-  text-align: center;
+  text-align: center; /* Center all content inside the App component. */
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
+/* Style for the app header section. */
 .App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  background-color: #282c34; /* Dark background. */
+  min-height: 100vh; /* Full viewport height. */
+  display: flex; /* Flexbox layout. */
+  flex-direction: column; /* Stack children vertically. */
+  align-items: center; /* Center horizontally. */
+  justify-content: center; /* Center vertically. */
+  font-size: calc(10px + 2vmin); /* Responsive font size. */
+  color: white; /* White text. */
 }
 
+/* Style for links in the app. */
 .App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  color: #61dafb; /* Light blue color for links. */
 }

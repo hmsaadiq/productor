@@ -1,45 +1,67 @@
+// FRONTEND ORDER CONFIRMATION PAGE: This file defines the ConfirmationPage component for the React frontend.
+// It displays the order confirmation, order details, and options to view QR code, order another cake, or view order history.
+//
+// Design Patterns: Uses the React Component pattern, Context pattern for global state, and modal/dialog pattern for QR code.
+// Data Structures: Uses React state (useState), context objects, and props for component communication.
+// Security: Redirects unauthenticated users, handles errors securely, and does not expose sensitive data.
+
+// Import React, useEffect, and useState for component logic, side effects, and state management.
 import React, { useEffect, useState } from 'react';
+// Import useNavigate from React Router for programmatic navigation.
 import { useNavigate } from 'react-router-dom';
+// Import useConfig hook to access global state (user, config, resetConfig).
 import { useConfig } from '../context/ConfigContext';
+// Import createOrder utility to create a new order in the backend.
 import { createOrder } from '../utils/orderService';
+// Import QRCodeModal for displaying the order as a QR code.
 import QRCodeModal from '../components/QRCodeModal';
 
+// ConfirmationPage component displays order confirmation and details.
 export default function ConfirmationPage() {
+  // Get navigate function for routing.
   const navigate = useNavigate();
+  // Get config, user, and resetConfig from context.
   const { config, user, resetConfig } = useConfig();
+  // Local state for order ID after creation.
   const [orderId, setOrderId] = useState<string | null>(null);
+  // Local state for error messages.
   const [error, setError] = useState<string | null>(null);
+  // Local state for loading indicator.
   const [loading, setLoading] = useState(true);
+  // Local state for QR code modal visibility.
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
 
+  // useEffect: Create a new order when the page loads (only once).
   useEffect(() => {
+    // Only create order if it hasn't been created yet
+    if (orderId !== null) return;
+    if (!user) {
+      navigate('/'); // Redirect to home if not authenticated.
+      return;
+    }
     const createNewOrder = async () => {
-      if (!user) {
-        navigate('/');
-        return;
-      }
-
       try {
         setLoading(true);
-        const id = await createOrder(user, config);
-        setOrderId(id);
+        const id = await createOrder(user, config); // Create order in backend.
+        setOrderId(id); // Store order ID.
         setError(null);
       } catch (err) {
-        setError('Failed to create order');
+        setError('Failed to create order'); // Show error if order creation fails.
         console.error('Error creating order:', err);
       } finally {
         setLoading(false);
       }
     };
-
     createNewOrder();
-  }, [user, config, navigate]);
+  }, []); // Only run on mount
 
+  // Handle "Order Another Cake" button click.
   const handleContinueShopping = () => {
-    resetConfig();
-    navigate('/customize');
+    resetConfig(); // Reset config to defaults.
+    navigate('/customize'); // Go to configurator page.
   };
 
+  // Show loading UI while order is being created.
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
@@ -52,6 +74,7 @@ export default function ConfirmationPage() {
     );
   }
 
+  // Show error UI if order creation failed.
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
@@ -70,6 +93,7 @@ export default function ConfirmationPage() {
     );
   }
 
+  // Render the confirmation UI.
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -86,33 +110,88 @@ export default function ConfirmationPage() {
               Order Details
             </h2>
             <div className="space-y-4">
+              {/* Product Type */}
               <div>
-                <p className="text-sm text-gray-500">Size</p>
-                <p className="text-gray-900">{config.size}"</p>
+                <p className="text-sm text-gray-500">Product</p>
+                <p className="text-gray-900 capitalize">{config.productType}</p>
               </div>
-              <div>
-                <p className="text-sm text-gray-500">Layers</p>
-                <p className="text-gray-900">{config.layers}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Flavor</p>
-                <p className="text-gray-900 capitalize">{config.flavor}</p>
-              </div>
-              {config.addons.length > 0 && (
-                <div>
-                  <p className="text-sm text-gray-500">Add-ons</p>
-                  <p className="text-gray-900">
-                    {config.addons.map(addon => 
-                      addon.charAt(0).toUpperCase() + addon.slice(1)
-                    ).join(', ')}
-                  </p>
-                </div>
+              {/* Cake Options */}
+              {config.productType === 'cake' && (
+                <>
+                  <div>
+                    <p className="text-sm text-gray-500">Shape</p>
+                    <p className="text-gray-900 capitalize">{config.shape}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Size</p>
+                    <p className="text-gray-900">{config.size}"</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Layers</p>
+                    <p className="text-gray-900">{config.layers}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Flavor</p>
+                    <p className="text-gray-900 capitalize">{config.flavor}</p>
+                  </div>
+                  {config.addons && config.addons.length > 0 && (
+                    <div>
+                      <p className="text-sm text-gray-500">Add-ons</p>
+                      <p className="text-gray-900">
+                        {config.addons.map(addon =>
+                          addon.charAt(0).toUpperCase() + addon.slice(1)
+                        ).join(', ')}
+                      </p>
+                    </div>
+                  )}
+                  {config.text && (
+                    <div>
+                      <p className="text-sm text-gray-500">Message</p>
+                      <p className="text-gray-900">{config.text}</p>
+                    </div>
+                  )}
+                </>
               )}
-              {config.text && (
-                <div>
-                  <p className="text-sm text-gray-500">Message</p>
-                  <p className="text-gray-900">{config.text}</p>
-                </div>
+              {/* Cookies/Muffins Options */}
+              {(config.productType === 'cookies' || config.productType === 'muffins') && (
+                <>
+                  <div>
+                    <p className="text-sm text-gray-500">Box Size</p>
+                    <p className="text-gray-900">{config.boxSize ? `Box of ${config.boxSize}` : '-'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Flavors</p>
+                    <p className="text-gray-900 capitalize">
+                      {config.boxFlavors && config.boxFlavors.length > 0
+                        ? config.boxFlavors.join(', ')
+                        : '-'}
+                    </p>
+                  </div>
+                </>
+              )}
+              {/* Delivery Details */}
+              {config.deliveryDetails && config.deliveryDetails.name && (
+                <>
+                  <div className="border-t pt-4">
+                    <span className="text-gray-600 font-bold">Delivery Details</span>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Name</p>
+                    <p className="text-gray-900">{config.deliveryDetails.name}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Address</p>
+                    <p className="text-gray-900">{config.deliveryDetails.address}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Phone</p>
+                    <p className="text-gray-900">{config.deliveryDetails.phone}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">State</p>
+                    <p className="text-gray-900">{config.deliveryDetails.state}</p>
+                  </div>
+                </>
               )}
               <div className="pt-4 border-t">
                 <div className="flex justify-between items-center">
@@ -148,6 +227,7 @@ export default function ConfirmationPage() {
         </div>
       </div>
 
+      {/* QR code modal for displaying order as QR */}
       <QRCodeModal
         isOpen={isQRModalOpen}
         onClose={() => setIsQRModalOpen(false)}

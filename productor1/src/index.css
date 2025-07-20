@@ -1,27 +1,39 @@
+/* FRONTEND STYLESHEET: This file defines global and component-level styles for the React frontend using Tailwind CSS. */
+/*
+Design Patterns: Uses Utility-First CSS (Tailwind), and custom component classes for consistent styling.
+Data Structures: CSS classes (strings, objects in JS), and @layer for grouping styles.
+Security: No direct security features, but Tailwind helps prevent unsafe inline styles.
+*/
+
+/* Import Tailwind's base styles (resets, typography, etc.). */
 @tailwind base;
+/* Import Tailwind's component classes (buttons, forms, etc.). */
 @tailwind components;
+/* Import Tailwind's utility classes (margin, padding, color, etc.). */
 @tailwind utilities;
 
+/* Define base styles for the <body> element using Tailwind's @apply directive. */
 @layer base {
   body {
-    @apply bg-gray-50 text-gray-900;
+    @apply bg-gray-50 text-gray-900; /* Set background and text color for the whole app. */
   }
 }
 
+/* Define custom component classes for buttons and inputs. */
 @layer components {
   .btn {
-    @apply px-4 py-2 rounded-md font-medium transition-colors duration-200;
+    @apply px-4 py-2 rounded-md font-medium transition-colors duration-200; /* Base button style. */
   }
   
   .btn-primary {
-    @apply bg-primary-600 text-white hover:bg-primary-700;
+    @apply bg-primary-600 text-white hover:bg-primary-700; /* Primary button style. */
   }
   
   .btn-secondary {
-    @apply bg-gray-200 text-gray-800 hover:bg-gray-300;
+    @apply bg-gray-200 text-gray-800 hover:bg-gray-300; /* Secondary button style. */
   }
   
   .input {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+    @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent; /* Input field style. */
   }
 } 

@@ -1,9 +1,22 @@
+// FRONTEND LANDING PAGE COMPONENT: This file defines the HomePage component for the React frontend.
+// It serves as the landing page, introducing the app and providing navigation to the configurator and QR code scanner.
+//
+// Design Patterns: Uses the React Component pattern, presentational component pattern, and modal/dialog pattern for QR code.
+// Data Structures: Uses React state (useState) for modal control.
+// Security: No direct security features; only displays static and navigational content.
+
+// Import React and useState for component logic and state management.
 import React, { useState } from 'react';
+// Import useNavigate from React Router for programmatic navigation.
 import { useNavigate } from 'react-router-dom';
+// Import QRCodeModal for displaying/scanning QR codes.
 import QRCodeModal from '../components/QRCodeModal';
 
+// HomePage component displays the landing UI and navigation options.
 export default function HomePage() {
+  // Get navigate function for routing.
   const navigate = useNavigate();
+  // Local state to control QR code modal visibility.
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
 
   return (
@@ -19,12 +32,14 @@ export default function HomePage() {
         </div>
 
         <div className="mt-10 flex justify-center space-x-4">
+          {/* Button to navigate to the cake configurator */}
           <button
             onClick={() => navigate('/customize')}
             className="btn btn-primary px-8 py-3 text-lg"
           >
             Start Customizing
           </button>
+          {/* Button to open QR code scanner modal */}
           <button
             onClick={() => setIsQRModalOpen(true)}
             className="btn btn-secondary px-8 py-3 text-lg"
@@ -58,6 +73,7 @@ export default function HomePage() {
         </div>
       </div>
 
+      {/* QR code modal for scanning (mode="scan") */}
       <QRCodeModal
         isOpen={isQRModalOpen}
         onClose={() => setIsQRModalOpen(false)}
