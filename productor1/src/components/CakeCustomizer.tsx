@@ -35,12 +35,14 @@ export default function CakeCustomizer() {
   // useEffect: Recalculate price whenever relevant config fields change.
   useEffect(() => {
     const newPrice = calculatePrice(config); // Calculate new price.
-    setConfig({ ...config, price: newPrice }); // Update config with new price.
-  }, [config.size, config.layers, config.flavor, config.addons]);
+    if (newPrice !== config.price) {
+      setConfig({ ...config, price: newPrice }); // Update config with new price.
+    }
+  }, [config.size, config.layers, config.flavor, config.addons, config.boxSize, config.boxFlavors, config.productType, config.price, setConfig]);
 
   // Handle size selection. If switching to Bento, force layers to 1.
   const handleSizeChange = (size: string) => {
-    if (size === 'Bento' && config.layers > 1) {
+    if (size === 'Bento' && (config.layers || 1) > 1) {
       setConfig({ ...config, size, layers: 1 });
     } else {
       setConfig({ ...config, size });
@@ -62,9 +64,10 @@ export default function CakeCustomizer() {
 
   // Handle add-on selection (toggle in array).
   const handleAddonChange = (addon: string) => {
-    const newAddons = config.addons.includes(addon)
-      ? config.addons.filter(a => a !== addon)
-      : [...config.addons, addon];
+    const currentAddons = config.addons || [];
+    const newAddons = currentAddons.includes(addon)
+      ? currentAddons.filter(a => a !== addon)
+      : [...currentAddons, addon];
     setConfig({ ...config, addons: newAddons });
   };
 
@@ -129,8 +132,7 @@ export default function CakeCustomizer() {
     }
   };
 
-  // Boolean for whether Bento size is selected.
-  const isBentoSize = config.size === 'Bento';
+
 
   // Render the customization UI.
   return (

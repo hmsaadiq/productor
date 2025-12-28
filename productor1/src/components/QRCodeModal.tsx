@@ -5,8 +5,8 @@
 // Data Structures: Uses context objects, state for scan results, and objects for QR data.
 // Security: No direct security features; only displays or encodes configuration data.
 
-// Import React and useState for component logic and state management.
-import React, { useState } from 'react';
+// Import React for component creation.
+import React from 'react';
 // Import Dialog from Headless UI for accessible modal dialogs.
 import { Dialog } from '@headlessui/react';
 // Import QRCodeSVG from qrcode.react for generating QR codes.
@@ -25,8 +25,6 @@ interface QRCodeModalProps {
 export default function QRCodeModal({ isOpen, onClose, mode }: QRCodeModalProps) {
   // Get current cake configuration from context.
   const { config } = useConfig();
-  // Local state for scan result (not implemented in this version).
-  const [scanResult, setScanResult] = useState<string>('');
 
   // Prepare QR data by combining config with a timestamp.
   const qrData = {

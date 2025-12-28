@@ -5,8 +5,8 @@
 // Data Structures: Uses React state (useState), context objects, and props for component communication.
 // Security: Redirects unauthenticated users, handles errors securely, and does not expose sensitive data.
 
-// Import React, useEffect, and useState for component logic, side effects, and state management.
-import React, { useEffect, useState } from 'react';
+// Import React, useEffect, useState, and useRef for component logic, side effects, state management, and refs.
+import React, { useEffect, useState, useRef } from 'react';
 // Import useNavigate from React Router for programmatic navigation.
 import { useNavigate } from 'react-router-dom';
 // Import useConfig hook to access global state (user, config, resetConfig).
@@ -30,30 +30,48 @@ export default function ConfirmationPage() {
   const [loading, setLoading] = useState(true);
   // Local state for QR code modal visibility.
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
+  // Ref to prevent duplicate order creation
+  const orderCreated = useRef(false);
 
-  // useEffect: Create a new order when the page loads (only once).
   useEffect(() => {
-    // Only create order if it hasn't been created yet
-    if (orderId !== null) return;
     if (!user) {
-      navigate('/'); // Redirect to home if not authenticated.
+      navigate('/');
       return;
     }
+    if (orderId !== null || orderCreated.current) return;
+    
     const createNewOrder = async () => {
+      if (orderCreated.current) return;
+      orderCreated.current = true;
       try {
         setLoading(true);
-        const id = await createOrder(user, config); // Create order in backend.
-        setOrderId(id); // Store order ID.
+        const id = await createOrder(user, config);
+        setOrderId(id);
         setError(null);
+        
+        // Email notification disabled for now
+        // try {
+        //   await fetch('https://fcnxfgvbemgdrrcbmeie.supabase.co/functions/v1/send-order-email', {
+        //     method: 'POST',
+        //     headers: { 'Content-Type': 'application/json' },
+        //     body: JSON.stringify({ record: { id, config, status: 'pending', created_at: new Date().toISOString() } })
+        //   });
+        //   console.log('Email notification sent successfully');
+        // } catch (emailError) {
+        //   console.log('Email notification failed:', emailError);
+        //   // Don't fail the order if email fails
+        // }
       } catch (err) {
-        setError('Failed to create order'); // Show error if order creation fails.
+        orderCreated.current = false; // Reset on error
+        console.error('Full error object:', err);
+        setError(`Failed to create order: ${err instanceof Error ? err.message : 'Unknown error'}`);
         console.error('Error creating order:', err);
       } finally {
         setLoading(false);
       }
     };
     createNewOrder();
-  }, []); // Only run on mount
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Handle "Order Another Cake" button click.
   const handleContinueShopping = () => {
@@ -197,7 +215,7 @@ export default function ConfirmationPage() {
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-500">Total</span>
                   <span className="text-lg font-medium text-primary-600">
-                    ${config.price}
+                    {new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', currencyDisplay: 'narrowSymbol' }).format(config.price)}
                   </span>
                 </div>
               </div>

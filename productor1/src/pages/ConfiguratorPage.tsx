@@ -20,7 +20,7 @@ import LoginModal from '../components/LoginModal';
 // Import QRCodeModal for displaying QR code of config.
 import QRCodeModal from '../components/QRCodeModal';
 // Import PaymentForm for handling payment.
-import PaymentForm from '../components/PaymentForm';
+// import PaymentForm from '../components/PaymentForm';
 // Import DeliveryDetailsPage (to be created) and add navigation to it
 
 // ConfiguratorPage component provides the main cake customization and order flow.
@@ -33,10 +33,6 @@ export default function ConfiguratorPage() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   // Local state for QR code modal visibility.
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
-  // Local state for showing payment form.
-  const [showPayment, setShowPayment] = useState(false);
-  // Local state for payment error messages.
-  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   // Boolean for whether the user can proceed (must select required fields based on product)
   const canProceed = (() => {
@@ -57,17 +53,7 @@ export default function ConfiguratorPage() {
     navigate('/delivery'); // Go to delivery details page
   };
 
-  // Handle successful payment.
-  const handlePaymentSuccess = () => {
-    setShowPayment(false);
-    setPaymentError(null);
-    navigate('/confirmation'); // Go to confirmation page.
-  };
 
-  // Handle payment error.
-  const handlePaymentError = (error: Error) => {
-    setPaymentError(error.message || 'Payment failed. Please try again.');
-  };
 
   // Render the configurator UI.
   return (

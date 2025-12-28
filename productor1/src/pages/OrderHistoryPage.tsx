@@ -102,9 +102,7 @@ export default function OrderHistoryPage() {
                         : ''}
                     </h3>
                     <p className="text-sm text-gray-500">
-                      {order.createdAt && typeof order.createdAt === 'object' && typeof order.createdAt.toDate === 'function'
-                        ? order.createdAt.toDate().toLocaleDateString()
-                        : new Date(order.createdAt as any).toLocaleDateString()}
+                      {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'Unknown date'}
                     </p>
                   </div>
                   <span
@@ -160,7 +158,7 @@ export default function OrderHistoryPage() {
                         <p className="text-gray-900 capitalize">
                           {order.config.boxFlavors && order.config.boxFlavors.length > 0
                             ? order.config.boxFlavors.join(', ')
-                            : '-'}</p>
+                            : 'No flavors selected'}</p>
                       </div>
                     </>
                   )}
@@ -193,9 +191,9 @@ export default function OrderHistoryPage() {
                 <div className="mt-4 pt-4 border-t">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-500">Total</span>
-                    <span className="text-lg font-medium text-primary-600">
-                      ${order.config.price}
-                    </span>
+                  <span className="text-lg font-medium text-primary-600">
+                    {new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', currencyDisplay: 'narrowSymbol' }).format(order.config.price)}
+                  </span>
                   </div>
                 </div>
               </div>

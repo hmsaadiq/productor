@@ -3,14 +3,14 @@
 //
 // Design Patterns: Uses the React Context pattern (for global state), Provider pattern, and custom hook pattern (useConfig).
 // Data Structures: Uses TypeScript interfaces for type safety, React state (useState), and context objects.
-// Security: Handles authentication state (user), but does not store sensitive data directly. Relies on Firebase Auth for security.
+// Security: Handles authentication state (user), but does not store sensitive data directly. Relies on Supabase Auth for security.
 
 // Import React and hooks for context, state, and effect management.
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-// Import the User type from Firebase Auth for type safety.
-import { User } from 'firebase/auth';
-// Import the function to subscribe to Firebase Auth state changes.
-import { subscribeToAuthChanges } from '../utils/firebase';
+// Import the User type from Supabase Auth for type safety.
+import { User } from '@supabase/supabase-js';
+// Import the function to subscribe to Supabase Auth state changes.
+import { subscribeToAuthChanges } from '../utils/supabase';
 
 // Define the shape of the cake configuration object.
 interface DeliveryDetails {
@@ -80,7 +80,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
   const [config, setConfig] = useState<CakeConfig>(defaultConfig);
 
   useEffect(() => {
-    // Subscribe to Firebase Auth state changes when the component mounts.
+    // Subscribe to Supabase Auth state changes when the component mounts.
     const unsubscribe = subscribeToAuthChanges((user) => {
       setUser(user); // Update user state when auth state changes.
     });
@@ -118,4 +118,4 @@ export function useConfig() {
     throw new Error('useConfig must be used within a ConfigProvider');
   }
   return context;
-} 
+}

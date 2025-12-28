@@ -11,8 +11,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 // Import useConfig hook to access global user state and updater from context.
 import { useConfig } from '../context/ConfigContext';
-// Import signOut utility to handle user sign-out from Firebase Auth.
-import { signOut } from '../utils/firebase';
+// Import signOut utility to handle user sign-out from Supabase Auth.
+import { signOut } from '../utils/supabase';
 
 // Define the props for the Header component.
 interface HeaderProps {
@@ -24,10 +24,10 @@ export default function Header({ onSignInClick }: HeaderProps) {
   // Get user state and updater from context.
   const { user, setUser } = useConfig();
 
-  // Handle user sign-out by calling Firebase signOut and updating context.
+  // Handle user sign-out by calling Supabase signOut and updating context.
   const handleSignOut = async () => {
     try {
-      await signOut(); // Sign out from Firebase Auth.
+      await signOut(); // Sign out from Supabase Auth.
       setUser(null); // Clear user state in context.
     } catch (error) {
       console.error('Error signing out:', error); // Log any errors.
@@ -41,7 +41,7 @@ export default function Header({ onSignInClick }: HeaderProps) {
           <div className="flex">
             {/* Logo and home link */}
             <Link to="/" className="flex items-center">
-              <span className="text-2xl font-bold text-primary-600">CakeConfig</span>
+              <span className="text-2xl font-bold text-primary-600">Productor1</span>
             </Link>
           </div>
           
@@ -72,4 +72,4 @@ export default function Header({ onSignInClick }: HeaderProps) {
       </nav>
     </header>
   );
-} 
+}

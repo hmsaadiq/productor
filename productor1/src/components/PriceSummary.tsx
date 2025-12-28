@@ -15,11 +15,12 @@ export default function PriceSummary() {
   // Get current config from context.
   const { config } = useConfig();
 
-  // Helper function to format price as USD currency.
+  // Helper function to format price as NGN currency.
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-NG', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'NGN',
+      currencyDisplay: 'narrowSymbol',
     }).format(price);
   };
 
@@ -91,7 +92,7 @@ export default function PriceSummary() {
               <span className="font-medium capitalize">
                 {config.boxFlavors && config.boxFlavors.length > 0
                   ? config.boxFlavors.join(', ')
-                  : '-'}
+                  : 'No flavors selected'}
               </span>
             </div>
           </>

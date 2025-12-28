@@ -37,7 +37,7 @@ export default function HomePage() {
             onClick={() => navigate('/customize')}
             className="btn btn-primary px-8 py-3 text-lg"
           >
-            Start Customizing
+            Start Customizing Your order
           </button>
           {/* Button to open QR code scanner modal */}
           <button

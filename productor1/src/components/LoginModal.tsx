@@ -1,16 +1,16 @@
 // FRONTEND AUTHENTICATION MODAL COMPONENT: This file defines the LoginModal component for user authentication in the React frontend.
-// It provides a modal dialog for users to sign in with Google using Firebase Auth.
+// It provides a modal dialog for users to sign in with Google using Supabase Auth.
 //
 // Design Patterns: Uses the Modal/Dialog pattern (via Headless UI), Context pattern for user state, and custom hook pattern for context access.
 // Data Structures: Uses React state (useState), props, and context objects.
-// Security: Handles authentication securely via Firebase Auth, and disables UI during loading to prevent duplicate requests.
+// Security: Handles authentication securely via Supabase Auth, and disables UI during loading to prevent duplicate requests.
 
 // Import React and useState for component logic and state management.
 import React, { useState } from 'react';
 // Import Dialog from Headless UI for accessible modal dialogs.
 import { Dialog } from '@headlessui/react';
-// Import signInWithGoogle utility to handle Google sign-in via Firebase Auth.
-import { signInWithGoogle } from '../utils/firebase';
+// Import signInWithGoogle utility to handle Google sign-in via Supabase Auth.
+import { signInWithGoogle } from '../utils/supabase';
 // Import useConfig hook to update user state in context after sign-in.
 import { useConfig } from '../context/ConfigContext';
 
@@ -34,7 +34,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
     try {
       setError(null); // Clear previous errors.
       setIsLoading(true); // Show loading indicator.
-      const user = await signInWithGoogle(); // Sign in with Google via Firebase Auth.
+      const user = await signInWithGoogle(); // Sign in with Google via Supabase Auth.
       setUser(user); // Update user state in context.
       onClose(); // Close the modal on success.
     } catch (error) {
@@ -101,4 +101,4 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
       </div>
     </Dialog>
   );
-} 
+}
