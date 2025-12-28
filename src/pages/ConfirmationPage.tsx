@@ -23,7 +23,7 @@ export default function ConfirmationPage() {
   // Get config, user, and resetConfig from context.
   const { config, user, resetConfig } = useConfig();
   // Local state for order ID after creation.
-  const [orderId, setOrderId] = useState<string | null>(null);
+  const [orderId, setOrderId] = useState<number | null>(null);
   // Local state for error messages.
   const [error, setError] = useState<string | null>(null);
   // Local state for loading indicator.
@@ -120,7 +120,7 @@ export default function ConfirmationPage() {
             Order Confirmed!
           </h1>
           <p className="text-lg text-gray-600 mb-8">
-            Thank you for your order. Your order number is #{orderId?.slice(-6)}
+            Thank you for your order. Your order number is #{orderId?.toString().slice(-6)}
           </p>
 
           <div className="max-w-lg mx-auto bg-white rounded-lg shadow-sm p-6 mb-8">

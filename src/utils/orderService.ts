@@ -44,10 +44,10 @@ export const createOrder = async (user: User, config: OrderConfig) => {
       throw new Error('Box size is required for cookies and muffins');
     }
 
-    // Create order object directly without cleaning
+    // Create order object with config as object (not string)
     const order = {
       user_id: user.id,
-      config: config, // Send as plain object, let Supabase handle JSON conversion
+      config: config, // Send as object, Supabase will handle it
       status: 'pending',
     };
     
