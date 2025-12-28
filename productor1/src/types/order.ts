@@ -5,12 +5,9 @@
 // Data Structures: Defines interfaces and type aliases for order objects.
 // Security: No direct security features; only provides type definitions.
 
-// Import Timestamp type from Firebase Firestore for order creation time.
-import { Timestamp } from 'firebase/firestore';
-
 // Expanded config to support multiple product types and delivery details.
 export interface Order {
-  id: string; // Unique order ID (Firestore document ID).
+  id: string; // Unique order ID (Supabase UUID).
   userId: string; // User ID of the person who placed the order.
   config: {
     productType: 'cake' | 'cookies' | 'muffins'; // Product type selected by user.
@@ -35,8 +32,8 @@ export interface Order {
     };
   };
   status: 'pending' | 'confirmed' | 'completed'; // Order status.
-  createdAt: Timestamp; // Timestamp when order was created.
+  createdAt: string; // ISO timestamp when order was created (Supabase uses timestamptz).
 }
 
 // OrderConfig type alias for the config property of an order.
-export type OrderConfig = Order['config']; 
+export type OrderConfig = Order['config'];
