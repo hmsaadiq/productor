@@ -9,6 +9,10 @@
 import React, { useState } from 'react';
 // Import React Router for client-side routing (SPA navigation).
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+// Import MUI ThemeProvider and CssBaseline for Material-UI theming
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import { muiTheme } from './theme/muiTheme';
 // Import the ConfigProvider, which supplies global app state (user, config) via React Context.
 import { ConfigProvider } from './context/ConfigContext';
 // Import the Header component, which displays the top navigation bar.
@@ -31,10 +35,13 @@ function App() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   return (
-    // Wrap the app in ConfigProvider to supply global state (user, config) to all components.
-    <ConfigProvider>
-      {/* Set up the React Router for SPA navigation. */}
-      <Router>
+    // Wrap the app in MUI ThemeProvider for consistent styling
+    <ThemeProvider theme={muiTheme}>
+      <CssBaseline />
+      {/* Wrap the app in ConfigProvider to supply global state (user, config) to all components. */}
+      <ConfigProvider>
+        {/* Set up the React Router for SPA navigation. */}
+        <Router>
         {/* Main app container with background styling. */}
         <div className="min-h-screen bg-gray-50">
           {/* Header is always visible and contains navigation and sign-in/out controls. */}
@@ -65,8 +72,9 @@ function App() {
             onClose={() => setIsLoginModalOpen(false)}
           />
         </div>
-      </Router>
-    </ConfigProvider>
+        </Router>
+      </ConfigProvider>
+    </ThemeProvider>
   );
 }
 

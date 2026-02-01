@@ -7,10 +7,32 @@
 
 // Import React for component creation.
 import React from 'react';
+// Import MUI components for enhanced price summary UI
+import {
+  Box,
+  Paper,
+  Typography,
+  Divider,
+  List,
+  ListItem,
+  ListItemText,
+  Chip,
+  Avatar,
+  Card,
+  CardContent,
+  Stack,
+} from '@mui/material';
+import {
+  Receipt,
+  Cake,
+  Cookie,
+  LocalShipping,
+  AttachMoney,
+} from '@mui/icons-material';
 // Import useConfig hook to access current cake configuration from context.
 import { useConfig } from '../context/ConfigContext';
 
-// PriceSummary component displays the current cake configuration and price.
+// PriceSummary component displays the current cake configuration and price - Updated: Enhanced with MUI styling and better organization.
 export default function PriceSummary() {
   // Get current config from context.
   const { config } = useConfig();
@@ -24,129 +46,246 @@ export default function PriceSummary() {
     }).format(price);
   };
 
-  // Render the summary UI.
+  // Get product icon based on type
+  const getProductIcon = () => {
+    switch (config.productType) {
+      case 'cake':
+        return <Cake sx={{ color: 'primary.main' }} />;
+      case 'cookies':
+      case 'muffins':
+        return <Cookie sx={{ color: 'primary.main' }} />;
+      default:
+        return <Receipt sx={{ color: 'primary.main' }} />;
+    }
+  };
+
+  // Render the summary UI - Updated: Enhanced with MUI components and improved layout.
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
-      <h2 className="text-lg font-medium text-gray-900 mb-4">
-        Order Summary
-      </h2>
+    <Paper elevation={2} sx={{ borderRadius: 3, overflow: 'hidden' }}>
+      {/* Header Section - New: Added visual header with icon */}
+      <Box sx={{ 
+        p: 3, 
+        backgroundColor: 'grey.50',
+        borderBottom: '1px solid',
+        borderColor: 'grey.200'
+      }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Avatar sx={{ backgroundColor: 'primary.main' }}>
+            <Receipt />
+          </Avatar>
+          <Typography variant="h6" component="h2" fontWeight="bold">
+            Order Summary
+          </Typography>
+        </Box>
+      </Box>
 
-      <div className="space-y-4">
-        {/* Product Type */}
-        <div className="flex justify-between">
-          <span className="text-gray-600">Product</span>
-          <span className="font-medium capitalize">{config.productType}</span>
-        </div>
+      <CardContent sx={{ p: 3 }}>
+        {/* Product Information - Updated: Enhanced with visual elements */}
+        <Box sx={{ mb: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+            {getProductIcon()}
+            <Typography variant="subtitle1" fontWeight="bold">
+              Product Details
+            </Typography>
+          </Box>
 
-        {/* Cake Options */}
-        {config.productType === 'cake' && (
-          <>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Shape</span>
-              <span className="font-medium capitalize">{config.shape}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Size</span>
-              <span className="font-medium">{config.size}"</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Layers</span>
-              <span className="font-medium">{config.layers}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Flavor</span>
-              <span className="font-medium capitalize">{config.flavor}</span>
-            </div>
-            {/* Show add-ons if any are selected */}
-            {config.addons && config.addons.length > 0 && (
-              <div>
-                <span className="text-gray-600">Add-ons</span>
-                <ul className="mt-1 space-y-1">
-                  {config.addons.map(addon => (
-                    <li key={addon} className="flex justify-between">
-                      <span className="text-gray-500 capitalize">{addon}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+          <List dense sx={{ py: 0 }}>
+            <ListItem sx={{ px: 0, py: 0.5 }}>
+              <ListItemText 
+                primary="Product Type"
+                secondary={
+                  <Chip 
+                    label={config.productType?.charAt(0).toUpperCase() + config.productType?.slice(1) || 'Not selected'}
+                    size="small"
+                    color="primary"
+                    variant="outlined"
+                  />
+                }
+              />
+            </ListItem>
+
+            {/* Cake Options - Updated: Enhanced with better formatting */}
+            {config.productType === 'cake' && (
+              <>
+                <ListItem sx={{ px: 0, py: 0.5 }}>
+                  <ListItemText 
+                    primary="Shape & Size"
+                    secondary={`${config.shape ? config.shape.charAt(0).toUpperCase() + config.shape.slice(1) : 'Not selected'} • ${config.size || 'Not selected'}"`}
+                  />
+                </ListItem>
+                <ListItem sx={{ px: 0, py: 0.5 }}>
+                  <ListItemText 
+                    primary="Layers & Flavor"
+                    secondary={`${config.layers || 1} layer${config.layers !== 1 ? 's' : ''} • ${config.flavor ? config.flavor.charAt(0).toUpperCase() + config.flavor.slice(1) : 'Not selected'}`}
+                  />
+                </ListItem>
+                
+                {/* Add-ons - Updated: Enhanced with chips */}
+                {config.addons && config.addons.length > 0 && (
+                  <ListItem sx={{ px: 0, py: 0.5 }}>
+                    <ListItemText 
+                      primary="Add-ons"
+                      secondary={
+                        <Stack direction="row" spacing={0.5} sx={{ mt: 0.5 }}>
+                          {config.addons.map(addon => (
+                            <Chip 
+                              key={addon}
+                              label={addon.charAt(0).toUpperCase() + addon.slice(1)}
+                              size="small"
+                              variant="outlined"
+                              color="secondary"
+                            />
+                          ))}
+                        </Stack>
+                      }
+                    />
+                  </ListItem>
+                )}
+
+                {/* Custom Text - Updated: Enhanced display */}
+                {config.text && (
+                  <ListItem sx={{ px: 0, py: 0.5 }}>
+                    <ListItemText 
+                      primary="Custom Text"
+                      secondary={
+                        <Typography 
+                          variant="body2" 
+                          sx={{ 
+                            fontStyle: 'italic',
+                            color: 'primary.main',
+                            fontWeight: 500
+                          }}
+                        >
+                          "{config.text}"
+                        </Typography>
+                      }
+                    />
+                  </ListItem>
+                )}
+              </>
             )}
-            {/* Show custom text if provided */}
-            {config.text && (
-              <div className="flex justify-between">
-                <span className="text-gray-600">Text</span>
-                <span className="font-medium">{config.text}</span>
-              </div>
+
+            {/* Cookies/Muffins Options - Updated: Enhanced formatting */}
+            {(config.productType === 'cookies' || config.productType === 'muffins') && (
+              <>
+                <ListItem sx={{ px: 0, py: 0.5 }}>
+                  <ListItemText 
+                    primary="Box Size"
+                    secondary={config.boxSize ? `Box of ${config.boxSize}` : 'Not selected'}
+                  />
+                </ListItem>
+                <ListItem sx={{ px: 0, py: 0.5 }}>
+                  <ListItemText 
+                    primary="Flavors"
+                    secondary={
+                      config.boxFlavors && config.boxFlavors.length > 0 ? (
+                        <Stack direction="row" spacing={0.5} sx={{ mt: 0.5 }}>
+                          {config.boxFlavors.map(flavor => (
+                            <Chip 
+                              key={flavor}
+                              label={flavor.charAt(0).toUpperCase() + flavor.slice(1)}
+                              size="small"
+                              variant="outlined"
+                              color="secondary"
+                            />
+                          ))}
+                        </Stack>
+                      ) : 'No flavors selected'
+                    }
+                  />
+                </ListItem>
+              </>
             )}
-          </>
-        )}
+          </List>
+        </Box>
 
-        {/* Cookies/Muffins Options */}
-        {(config.productType === 'cookies' || config.productType === 'muffins') && (
-          <>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Box Size</span>
-              <span className="font-medium">{config.boxSize ? `Box of ${config.boxSize}` : '-'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Flavors</span>
-              <span className="font-medium capitalize">
-                {config.boxFlavors && config.boxFlavors.length > 0
-                  ? config.boxFlavors.join(', ')
-                  : 'No flavors selected'}
-              </span>
-            </div>
-          </>
-        )}
-
-        {/* Delivery Details (if present) */}
+        {/* Delivery Details - Updated: Enhanced with shipping icon */}
         {config.deliveryDetails && config.deliveryDetails.name && (
           <>
-            <div className="border-t pt-4">
-              <span className="text-gray-600 font-bold">Delivery Details</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Name</span>
-              <span className="font-medium">{config.deliveryDetails.name}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Address</span>
-              <span className="font-medium">{config.deliveryDetails.address}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Phone</span>
-              <span className="font-medium">{config.deliveryDetails.phone}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">State</span>
-              <span className="font-medium">{config.deliveryDetails.state}</span>
-            </div>
+            <Divider sx={{ my: 2 }} />
+            <Box sx={{ mb: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                <LocalShipping sx={{ color: 'primary.main' }} />
+                <Typography variant="subtitle1" fontWeight="bold">
+                  Delivery Details
+                </Typography>
+              </Box>
+
+              <List dense sx={{ py: 0 }}>
+                <ListItem sx={{ px: 0, py: 0.5 }}>
+                  <ListItemText 
+                    primary="Recipient"
+                    secondary={config.deliveryDetails.name}
+                  />
+                </ListItem>
+                <ListItem sx={{ px: 0, py: 0.5 }}>
+                  <ListItemText 
+                    primary="Address"
+                    secondary={config.deliveryDetails.address}
+                  />
+                </ListItem>
+                <ListItem sx={{ px: 0, py: 0.5 }}>
+                  <ListItemText 
+                    primary="Contact"
+                    secondary={`${config.deliveryDetails.phone} • ${config.deliveryDetails.state}`}
+                  />
+                </ListItem>
+              </List>
+            </Box>
           </>
         )}
 
-        <div className="border-t pt-4">
-          <div className="flex justify-between">
-            <span className="text-lg font-medium">Total</span>
-            <span className="text-lg font-medium text-primary-600">
-              {formatPrice(config.price)}
-            </span>
-          </div>
-        </div>
-      </div>
+        <Divider sx={{ my: 2 }} />
 
-      {/* Placeholder for cake/box preview */}
-      <div className="mt-6 p-4 bg-gray-50 rounded-lg text-center">
-        <div className="w-32 h-32 mx-auto bg-gray-200 rounded-full flex items-center justify-center">
-          <span className="text-gray-500 text-sm">
-            {config.productType === 'cake'
-              ? `${config.size}" ${config.flavor}`
-              : config.productType === 'cookies'
-              ? `Cookies: ${config.boxSize || ''}`
-              : config.productType === 'muffins'
-              ? `Muffins: ${config.boxSize || ''}`
-              : ''}
-          </span>
-        </div>
-      </div>
-    </div>
+        {/* Total Price - Updated: Enhanced with prominent styling */}
+        <Box sx={{ 
+          p: 2, 
+          backgroundColor: 'primary.main',
+          borderRadius: 2,
+          color: 'white',
+          textAlign: 'center'
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 1 }}>
+            <AttachMoney />
+            <Typography variant="body2" sx={{ opacity: 0.9 }}>
+              Total Amount
+            </Typography>
+          </Box>
+          <Typography variant="h4" fontWeight="bold">
+            {formatPrice(config.price)}
+          </Typography>
+        </Box>
+
+        {/* Product Preview - Updated: Enhanced visual preview */}
+        <Card variant="outlined" sx={{ mt: 3, backgroundColor: 'grey.50' }}>
+          <CardContent sx={{ textAlign: 'center', py: 3 }}>
+            <Avatar 
+              sx={{ 
+                width: 80, 
+                height: 80, 
+                mx: 'auto', 
+                mb: 2,
+                backgroundColor: 'primary.main',
+                fontSize: '2rem'
+              }}
+            >
+              {config.productType === 'cake' ? <Cake /> : <Cookie />}
+            </Avatar>
+            <Typography variant="body2" color="text.secondary" fontWeight="medium">
+              {config.productType === 'cake'
+                ? `${config.size || 'Custom'}" ${config.flavor || 'Cake'}`
+                : config.productType === 'cookies'
+                ? `${config.boxSize || 'Custom'} Cookies`
+                : config.productType === 'muffins'
+                ? `${config.boxSize || 'Custom'} Muffins`
+                : 'Your Order'}
+            </Typography>
+            <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+              Preview
+            </Typography>
+          </CardContent>
+        </Card>
+      </CardContent>
+    </Paper>
   );
-} 
+}

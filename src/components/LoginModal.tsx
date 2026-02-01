@@ -1,14 +1,31 @@
 // FRONTEND AUTHENTICATION MODAL COMPONENT: This file defines the LoginModal component for user authentication in the React frontend.
 // It provides a modal dialog for users to sign in with Google using Supabase Auth.
 //
-// Design Patterns: Uses the Modal/Dialog pattern (via Headless UI), Context pattern for user state, and custom hook pattern for context access.
+// Design Patterns: Uses the Modal/Dialog pattern (via MUI Dialog), Context pattern for user state, and custom hook pattern for context access.
 // Data Structures: Uses React state (useState), props, and context objects.
 // Security: Handles authentication securely via Supabase Auth, and disables UI during loading to prevent duplicate requests.
 
 // Import React and useState for component logic and state management.
 import React, { useState } from 'react';
-// Import Dialog from Headless UI for accessible modal dialogs.
-import { Dialog } from '@headlessui/react';
+// Import MUI components for enhanced modal UI
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Box,
+  Typography,
+  Alert,
+  CircularProgress,
+  Divider,
+  IconButton,
+} from '@mui/material';
+import {
+  Close,
+  Google,
+  Lock,
+} from '@mui/icons-material';
 // Import signInWithGoogle utility to handle Google sign-in via Supabase Auth.
 import { signInWithGoogle } from '../utils/supabase';
 // Import useConfig hook to update user state in context after sign-in.
@@ -20,7 +37,7 @@ interface LoginModalProps {
   onClose: () => void; // Function to close the modal.
 }
 
-// LoginModal component displays a modal for Google sign-in.
+// LoginModal component displays a modal for Google sign-in - Updated: Enhanced with MUI Dialog and improved UX.
 export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
   // Get setUser function from context to update user state after sign-in.
   const { setUser } = useConfig();
@@ -49,56 +66,113 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
     <Dialog
       open={isOpen}
       onClose={onClose}
-      className="fixed inset-0 z-10 overflow-y-auto"
+      maxWidth="sm"
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: 3,
+          p: 1,
+        }
+      }}
     >
-      <div className="flex items-center justify-center min-h-screen">
-        {/* Overlay for modal background */}
-        <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
-
-        <div className="relative bg-white rounded-lg max-w-sm w-full mx-4 p-6">
-          <Dialog.Title className="text-lg font-medium text-gray-900 mb-4">
+      {/* Header Section - Updated: Enhanced with icon and close button */}
+      <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pb: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Lock sx={{ color: 'primary.main' }} />
+          <Typography variant="h6" component="span">
             Sign in to continue
-          </Dialog.Title>
+          </Typography>
+        </Box>
+        <IconButton
+          onClick={onClose}
+          size="small"
+          sx={{ color: 'grey.500' }}
+        >
+          <Close />
+        </IconButton>
+      </DialogTitle>
 
-          {/* Show error message if present */}
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md text-sm">
-              {error}
-            </div>
-          )}
+      <DialogContent sx={{ pt: 2 }}>
+        {/* Welcome Message - New: Added welcoming content */}
+        <Box sx={{ textAlign: 'center', mb: 3 }}>
+          <Typography variant="body1" color="text.secondary" gutterBottom>
+            Welcome to Productor1
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Sign in to save your orders, track history, and enjoy a personalized experience.
+          </Typography>
+        </Box>
 
-          {/* Google sign-in button */}
-          <button
-            onClick={handleGoogleSignIn}
-            disabled={isLoading}
-            className={`w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 ${
-              isLoading ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
+        {/* Error Alert - Updated: Enhanced with MUI Alert */}
+        {error && (
+          <Alert 
+            severity="error" 
+            sx={{ mb: 3 }}
+            onClose={() => setError(null)}
           >
-            {isLoading ? (
-              <span>Signing in...</span>
+            {error}
+          </Alert>
+        )}
+
+        {/* Google Sign-in Button - Updated: Enhanced with MUI styling and loading state */}
+        <Button
+          fullWidth
+          variant="outlined"
+          size="large"
+          onClick={handleGoogleSignIn}
+          disabled={isLoading}
+          startIcon={
+            isLoading ? (
+              <CircularProgress size={20} />
             ) : (
-              <>
-                {/* Google logo icon */}
-                <img
-                  src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-                  alt="Google"
-                  className="w-5 h-5 mr-2"
-                />
-                Sign in with Google
-              </>
-            )}
-          </button>
+              <Google sx={{ color: '#4285f4' }} />
+            )
+          }
+          sx={{
+            py: 1.5,
+            borderRadius: 2,
+            borderColor: 'grey.300',
+            color: 'text.primary',
+            textTransform: 'none',
+            fontSize: '1rem',
+            fontWeight: 500,
+            '&:hover': {
+              borderColor: 'primary.main',
+              backgroundColor: 'grey.50',
+            },
+            '&:disabled': {
+              opacity: 0.7,
+            }
+          }}
+        >
+          {isLoading ? 'Signing in...' : 'Continue with Google'}
+        </Button>
 
-          {/* Cancel button to close modal */}
-          <button
-            onClick={onClose}
-            className="mt-4 w-full text-sm text-gray-500 hover:text-gray-700"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
+        {/* Security Notice - New: Added security information */}
+        <Box sx={{ mt: 3, textAlign: 'center' }}>
+          <Divider sx={{ mb: 2 }} />
+          <Typography variant="caption" color="text.secondary">
+            Your data is secure and protected. We use Google's secure authentication system.
+          </Typography>
+        </Box>
+      </DialogContent>
+
+      {/* Footer Actions - Updated: Enhanced with MUI DialogActions */}
+      <DialogActions sx={{ px: 3, pb: 3 }}>
+        <Button
+          onClick={onClose}
+          color="inherit"
+          sx={{ 
+            textTransform: 'none',
+            color: 'text.secondary',
+            '&:hover': {
+              backgroundColor: 'grey.100',
+            }
+          }}
+        >
+          Maybe later
+        </Button>
+      </DialogActions>
     </Dialog>
   );
 }
