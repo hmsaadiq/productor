@@ -1,28 +1,11 @@
-/* FRONTEND STYLESHEET: This file contains custom CSS for the React frontend, mainly for the App component. */
+/* FRONTEND STYLESHEET: Minimal styles for the App component since MUI handles most styling. */
 /*
-Design Patterns: Uses BEM-like class naming and CSS keyframes for animation.
-Data Structures: CSS classes (strings), keyframes (objects in browser engine).
+Design Patterns: Uses Material-UI theme system for consistent styling.
+Data Structures: CSS classes and MUI theme objects.
 Security: No direct security features; CSS is safe from code injection.
 */
 
-/* Style for the main app container. */
+/* Minimal styles since MUI handles most styling */
 .App {
-  text-align: center; /* Center all content inside the App component. */
-}
-
-/* Style for the app header section. */
-.App-header {
-  background-color: #282c34; /* Dark background. */
-  min-height: 100vh; /* Full viewport height. */
-  display: flex; /* Flexbox layout. */
-  flex-direction: column; /* Stack children vertically. */
-  align-items: center; /* Center horizontally. */
-  justify-content: center; /* Center vertically. */
-  font-size: calc(10px + 2vmin); /* Responsive font size. */
-  color: white; /* White text. */
-}
-
-/* Style for links in the app. */
-.App-link {
-  color: #61dafb; /* Light blue color for links. */
+  min-height: 100vh;
 }
