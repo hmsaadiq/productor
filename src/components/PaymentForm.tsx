@@ -7,6 +7,24 @@
 
 // Import React for component creation.
 import React from 'react';
+// Import MUI components for enhanced payment UI
+import {
+  Box,
+  Paper,
+  Typography,
+  Button,
+  Divider,
+  Alert,
+  Chip,
+  Stack,
+} from '@mui/material';
+import {
+  Payment,
+  Security,
+  CreditCard,
+  AccountBalance,
+  CheckCircle,
+} from '@mui/icons-material';
 // Import useConfig hook to access current cake configuration from context.
 import { useConfig } from '../context/ConfigContext';
 // Import PaystackButton from react-paystack for payment integration.
@@ -23,7 +41,7 @@ interface PaymentFormProps {
 // Paystack public key for test environment (should be replaced with live key in production).
 const publicKey = 'pk_test_477448a1c5f87a401a2636456565511a8bd6acdb';
 
-// PaymentForm component provides the payment UI and logic.
+// PaymentForm component provides the payment UI and logic - Updated: Enhanced with MUI styling and better UX.
 export default function PaymentForm({ amount, userEmail, onSuccess, onError }: PaymentFormProps) {
   // Get current cake configuration from context.
   const { config } = useConfig();
@@ -48,17 +66,159 @@ export default function PaymentForm({ amount, userEmail, onSuccess, onError }: P
     },
   };
 
-  // Render the payment form UI.
+  // Format amount for display
+  const formatAmount = (amount: number) => {
+    return new Intl.NumberFormat('en-NG', {
+      style: 'currency',
+      currency: 'NGN',
+    }).format(amount);
+  };
+
+  // Render the payment form UI - Updated: Enhanced with MUI components and professional styling.
   return (
-    <div className="max-w-md mx-auto">
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Pay with Card or Bank
-        </label>
-        <div className="p-3 border border-gray-300 rounded-md">
-          <PaystackButton {...paystackProps} className="w-full btn btn-primary" />
-        </div>
-      </div>
-    </div>
+    <Box sx={{ maxWidth: 500, mx: 'auto' }}>
+      <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
+        {/* Header Section - New: Added payment header with icon */}
+        <Box sx={{ textAlign: 'center', mb: 4 }}>
+          <Payment sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
+          <Typography variant="h5" component="h2" gutterBottom>
+            Complete Your Payment
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Secure payment powered by Paystack
+          </Typography>
+        </Box>
+
+        {/* Amount Display - New: Enhanced amount display */}
+        <Paper 
+          variant="outlined" 
+          sx={{ 
+            p: 3, 
+            mb: 3, 
+            textAlign: 'center',
+            backgroundColor: 'grey.50',
+            borderRadius: 2
+          }}
+        >
+          <Typography variant="body2" color="text.secondary" gutterBottom>
+            Total Amount
+          </Typography>
+          <Typography variant="h4" color="primary.main" fontWeight="bold">
+            {formatAmount(amount)}
+          </Typography>
+        </Paper>
+
+        {/* Payment Methods Section - New: Visual payment options */}
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <CreditCard sx={{ color: 'primary.main' }} />
+            Payment Methods
+          </Typography>
+          
+          <Stack direction="row" spacing={1} sx={{ mb: 3 }}>
+            <Chip 
+              icon={<CreditCard />} 
+              label="Card" 
+              color="primary" 
+              variant="outlined"
+            />
+            <Chip 
+              icon={<AccountBalance />} 
+              label="Bank Transfer" 
+              color="primary" 
+              variant="outlined"
+            />
+            <Chip 
+              label="USSD" 
+              color="primary" 
+              variant="outlined"
+            />
+          </Stack>
+
+          {/* Paystack Button - Updated: Enhanced with MUI Button wrapper */}
+          <Box sx={{ position: 'relative' }}>
+            <Button
+              fullWidth
+              variant="contained"
+              size="large"
+              sx={{
+                py: 2,
+                borderRadius: 3,
+                fontSize: '1rem',
+                fontWeight: 600,
+                boxShadow: '0 4px 20px -2px rgba(239, 57, 102, 0.3)',
+                '&:hover': {
+                  boxShadow: '0 8px 30px -4px rgba(239, 57, 102, 0.4)',
+                  transform: 'translateY(-1px)',
+                },
+                '&:active': {
+                  transform: 'translateY(0)',
+                }
+              }}
+            >
+              <PaystackButton {...paystackProps} />
+            </Button>
+          </Box>
+        </Box>
+
+        <Divider sx={{ my: 3 }} />
+
+        {/* Security Information - New: Trust indicators */}
+        <Box sx={{ textAlign: 'center' }}>
+          <Alert 
+            severity="info" 
+            icon={<Security />}
+            sx={{ 
+              mb: 2,
+              backgroundColor: 'grey.50',
+              '& .MuiAlert-icon': {
+                color: 'primary.main'
+              }
+            }}
+          >
+            Your payment is secured with 256-bit SSL encryption
+          </Alert>
+
+          <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <CheckCircle sx={{ fontSize: 16, color: 'success.main' }} />
+              <Typography variant="caption" color="text.secondary">
+                PCI Compliant
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <CheckCircle sx={{ fontSize: 16, color: 'success.main' }} />
+              <Typography variant="caption" color="text.secondary">
+                Bank Grade Security
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <CheckCircle sx={{ fontSize: 16, color: 'success.main' }} />
+              <Typography variant="caption" color="text.secondary">
+                Instant Processing
+              </Typography>
+            </Box>
+          </Stack>
+        </Box>
+
+        {/* Order Details - New: Order summary for reference */}
+        <Box sx={{ mt: 3, pt: 3, borderTop: '1px solid', borderColor: 'grey.200' }}>
+          <Typography variant="body2" color="text.secondary" gutterBottom>
+            <strong>Order Details:</strong>
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {config.productType === 'cake' 
+              ? `${config.size}" ${config.shape} ${config.flavor} cake with ${config.layers} layer${config.layers !== 1 ? 's' : ''}`
+              : `Box of ${config.boxSize} ${config.productType} - ${config.boxFlavors?.join(', ') || 'No flavors selected'}`
+            }
+          </Typography>
+          {config.text && (
+            <Typography variant="body2" color="text.secondary">
+              Custom text: "{config.text}"
+            </Typography>
+          )}
+        </Box>
+      </Paper>
+    </Box>
   );
-} 
+}

@@ -9,6 +9,23 @@
 import React, { useState } from 'react';
 // Import useNavigate from React Router for programmatic navigation.
 import { useNavigate } from 'react-router-dom';
+// Import MUI components for enhanced configurator UI
+import {
+  Box,
+  Container,
+  Paper,
+  Button,
+  Stack,
+  Typography,
+  Divider,
+  Chip,
+} from '@mui/material';
+import {
+  QrCode,
+  ArrowForward,
+  Login,
+  CheckCircle,
+} from '@mui/icons-material';
 // Import useConfig hook to access global state (user, config).
 import { useConfig } from '../context/ConfigContext';
 // Import CakeCustomizer for cake options UI.
@@ -19,11 +36,8 @@ import PriceSummary from '../components/PriceSummary';
 import LoginModal from '../components/LoginModal';
 // Import QRCodeModal for displaying QR code of config.
 import QRCodeModal from '../components/QRCodeModal';
-// Import PaymentForm for handling payment.
-// import PaymentForm from '../components/PaymentForm';
-// Import DeliveryDetailsPage (to be created) and add navigation to it
 
-// ConfiguratorPage component provides the main cake customization and order flow.
+// ConfiguratorPage component provides the main cake customization and order flow - Updated: Enhanced with MUI design.
 export default function ConfiguratorPage() {
   // Get navigate function for routing.
   const navigate = useNavigate();
@@ -53,43 +67,146 @@ export default function ConfiguratorPage() {
     navigate('/delivery'); // Go to delivery details page
   };
 
-
-
-  // Render the configurator UI.
+  // Render the configurator UI - Updated: Enhanced with MUI layout and components.
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Customizer */}
-          <div className="lg:col-span-2">
-            <CakeCustomizer />
-          </div>
+    <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50', py: 4 }}>
+      <Container maxWidth="xl">
+        {/* Page Header - New: Added page title and breadcrumb */}
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h4" component="h1" sx={{ fontWeight: 700, mb: 1 }}>
+            Customize Your Order
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Design your perfect cake with our easy-to-use configurator
+          </Typography>
+        </Box>
 
-          {/* Right Column - Summary */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-8">
-              <PriceSummary />
-              <div className="mt-6 space-y-4">
-                <button
-                  onClick={() => setIsQRModalOpen(true)}
-                  className="btn btn-secondary w-full"
-                >
-                  Generate QR Code
-                </button>
-                {/* Proceed to delivery details instead of payment */}
-                <button
-                  onClick={handleNext}
-                  disabled={!canProceed}
-                  className={`btn btn-primary w-full ${!canProceed ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                  {user ? 'Next: Delivery Details' : 'Login to Continue'}
-                </button>
-                {/* Payment and error handling moved to delivery page */}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+        {/* Main Layout - Updated: Enhanced split layout with MUI */}
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', lg: 'row' },
+            gap: 4,
+            alignItems: 'flex-start',
+          }}
+        >
+          {/* Left Column - Customizer - Updated: Enhanced with Paper wrapper */}
+          <Box sx={{ flex: 2, minWidth: 0 }}>
+            <Paper
+              elevation={2}
+              sx={{
+                borderRadius: 3,
+                overflow: 'hidden',
+              }}
+            >
+              <CakeCustomizer />
+            </Paper>
+          </Box>
+
+          {/* Right Column - Summary and Actions - Updated: Enhanced sticky sidebar */}
+          <Box sx={{ flex: 1, minWidth: 300 }}>
+            <Box
+              sx={{
+                position: { lg: 'sticky' },
+                top: { lg: 32 },
+              }}
+            >
+              {/* Price Summary - Updated: Enhanced wrapper */}
+              <Paper
+                elevation={2}
+                sx={{
+                  borderRadius: 3,
+                  mb: 3,
+                  overflow: 'hidden',
+                }}
+              >
+                <PriceSummary />
+              </Paper>
+
+              {/* Action Buttons - Updated: Enhanced with MUI styling */}
+              <Paper
+                elevation={2}
+                sx={{
+                  p: 3,
+                  borderRadius: 3,
+                }}
+              >
+                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                  Ready to Order?
+                </Typography>
+                
+                {/* Configuration Status - New: Added status indicator */}
+                <Box sx={{ mb: 3 }}>
+                  {canProceed ? (
+                    <Chip
+                      icon={<CheckCircle />}
+                      label="Configuration Complete"
+                      color="success"
+                      variant="outlined"
+                      size="small"
+                    />
+                  ) : (
+                    <Chip
+                      label="Please complete your selection"
+                      color="warning"
+                      variant="outlined"
+                      size="small"
+                    />
+                  )}
+                </Box>
+
+                <Stack spacing={2}>
+                  {/* QR Code Button - Updated: Enhanced with MUI styling */}
+                  <Button
+                    variant="outlined"
+                    startIcon={<QrCode />}
+                    onClick={() => setIsQRModalOpen(true)}
+                    sx={{
+                      borderRadius: 2,
+                      textTransform: 'none',
+                      py: 1.5,
+                    }}
+                    fullWidth
+                  >
+                    Generate QR Code
+                  </Button>
+
+                  <Divider sx={{ my: 1 }} />
+
+                  {/* Proceed Button - Updated: Enhanced with better UX */}
+                  <Button
+                    variant="contained"
+                    size="large"
+                    endIcon={user ? <ArrowForward /> : <Login />}
+                    onClick={handleNext}
+                    disabled={!canProceed}
+                    sx={{
+                      borderRadius: 2,
+                      textTransform: 'none',
+                      py: 1.5,
+                      fontSize: '1.1rem',
+                      fontWeight: 600,
+                    }}
+                    fullWidth
+                  >
+                    {user ? 'Next: Delivery Details' : 'Login to Continue'}
+                  </Button>
+
+                  {/* Help Text - New: Added helpful guidance */}
+                  {!canProceed && (
+                    <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center', mt: 1 }}>
+                      {config.productType === 'cake'
+                        ? 'Please select size, flavor, and shape to continue'
+                        : 'Please select box size and flavors to continue'
+                      }
+                    </Typography>
+                  )}
+                </Stack>
+              </Paper>
+            </Box>
+          </Box>
+        </Box>
+      </Container>
 
       {/* Login modal for authentication */}
       <LoginModal
@@ -103,6 +220,6 @@ export default function ConfiguratorPage() {
         onClose={() => setIsQRModalOpen(false)}
         mode="display"
       />
-    </div>
+    </Box>
   );
 } 

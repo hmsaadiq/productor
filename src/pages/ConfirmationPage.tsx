@@ -9,6 +9,33 @@
 import React, { useEffect, useState, useRef } from 'react';
 // Import useNavigate from React Router for programmatic navigation.
 import { useNavigate } from 'react-router-dom';
+// Import MUI components for enhanced confirmation page UI
+import {
+  Box,
+  Container,
+  Paper,
+  Typography,
+  Button,
+  Divider,
+  Stack,
+  Alert,
+  CircularProgress,
+  Chip,
+  Card,
+  CardContent,
+  Stepper,
+  Step,
+  StepLabel,
+} from '@mui/material';
+import {
+  CheckCircle,
+  QrCode,
+  ShoppingCart,
+  History,
+  LocalShipping,
+  Cake,
+  Receipt,
+} from '@mui/icons-material';
 // Import useConfig hook to access global state (user, config, resetConfig).
 import { useConfig } from '../context/ConfigContext';
 // Import createOrder utility to create a new order in the backend.
@@ -16,7 +43,10 @@ import { createOrder } from '../utils/orderService';
 // Import QRCodeModal for displaying the order as a QR code.
 import QRCodeModal from '../components/QRCodeModal';
 
-// ConfirmationPage component displays order confirmation and details.
+// Stepper steps
+const steps = ['Customize', 'Delivery Details', 'Payment', 'Confirmation'];
+
+// ConfirmationPage component displays order confirmation and details - Updated: Enhanced with MUI design.
 export default function ConfirmationPage() {
   // Get navigate function for routing.
   const navigate = useNavigate();
@@ -79,171 +109,393 @@ export default function ConfirmationPage() {
     navigate('/customize'); // Go to configurator page.
   };
 
-  // Show loading UI while order is being created.
+  // Show loading UI while order is being created - Updated: Enhanced with MUI components.
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <p className="text-gray-500">Processing your order...</p>
-          </div>
-        </div>
-      </div>
+      <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50', py: 8 }}>
+        <Container maxWidth="sm">
+          <Paper
+            elevation={2}
+            sx={{
+              p: 6,
+              textAlign: 'center',
+              borderRadius: 3,
+            }}
+          >
+            <CircularProgress size={60} thickness={4} sx={{ mb: 3 }} />
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
+              Processing Your Order
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              Please wait while we confirm your order details...
+            </Typography>
+          </Paper>
+        </Container>
+      </Box>
     );
   }
 
-  // Show error UI if order creation failed.
+  // Show error UI if order creation failed - Updated: Enhanced with MUI components.
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <p className="text-red-500">{error}</p>
-            <button
+      <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50', py: 8 }}>
+        <Container maxWidth="sm">
+          <Paper
+            elevation={2}
+            sx={{
+              p: 6,
+              textAlign: 'center',
+              borderRadius: 3,
+            }}
+          >
+            <Alert severity="error" sx={{ mb: 4, borderRadius: 2 }}>
+              {error}
+            </Alert>
+            <Button
+              variant="contained"
               onClick={() => navigate('/customize')}
-              className="mt-4 btn btn-primary"
+              sx={{
+                borderRadius: 2,
+                textTransform: 'none',
+                px: 4,
+                py: 1.5,
+              }}
             >
               Try Again
-            </button>
-          </div>
-        </div>
-      </div>
+            </Button>
+          </Paper>
+        </Container>
+      </Box>
     );
   }
 
-  // Render the confirmation UI.
+  // Render the confirmation UI - Updated: Enhanced with MUI components and better layout.
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">
+    <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50', py: 4 }}>
+      <Container maxWidth="lg">
+        {/* Success Header - Updated: Enhanced with MUI styling */}
+        <Box sx={{ textAlign: 'center', mb: 6 }}>
+          <CheckCircle
+            sx={{
+              fontSize: 80,
+              color: 'success.main',
+              mb: 2,
+            }}
+          />
+          <Typography
+            variant="h3"
+            component="h1"
+            sx={{
+              fontWeight: 700,
+              mb: 2,
+              color: 'success.main',
+            }}
+          >
             Order Confirmed!
-          </h1>
-          <p className="text-lg text-gray-600 mb-8">
-            Thank you for your order. Your order number is #{orderId?.toString().slice(-6)}
-          </p>
+          </Typography>
+          <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
+            Thank you for your order
+          </Typography>
+          <Chip
+            label={`Order #${orderId?.toString().slice(-6)}`}
+            color="primary"
+            variant="outlined"
+            sx={{ fontSize: '1rem', px: 2, py: 1 }}
+          />
+        </Box>
 
-          <div className="max-w-lg mx-auto bg-white rounded-lg shadow-sm p-6 mb-8">
-            <h2 className="text-xl font-medium text-gray-900 mb-4">
-              Order Details
-            </h2>
-            <div className="space-y-4">
-              {/* Product Type */}
-              <div>
-                <p className="text-sm text-gray-500">Product</p>
-                <p className="text-gray-900 capitalize">{config.productType}</p>
-              </div>
-              {/* Cake Options */}
-              {config.productType === 'cake' && (
-                <>
-                  <div>
-                    <p className="text-sm text-gray-500">Shape</p>
-                    <p className="text-gray-900 capitalize">{config.shape}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Size</p>
-                    <p className="text-gray-900">{config.size}"</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Layers</p>
-                    <p className="text-gray-900">{config.layers}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Flavor</p>
-                    <p className="text-gray-900 capitalize">{config.flavor}</p>
-                  </div>
-                  {config.addons && config.addons.length > 0 && (
-                    <div>
-                      <p className="text-sm text-gray-500">Add-ons</p>
-                      <p className="text-gray-900">
-                        {config.addons.map(addon =>
-                          addon.charAt(0).toUpperCase() + addon.slice(1)
-                        ).join(', ')}
-                      </p>
-                    </div>
+        {/* Progress Stepper - New: Added completion stepper */}
+        <Paper elevation={1} sx={{ p: 3, borderRadius: 2, mb: 4 }}>
+          <Stepper activeStep={3} alternativeLabel>
+            {steps.map((label, index) => (
+              <Step key={label}>
+                <StepLabel
+                  StepIconComponent={() => (
+                    <Box
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        bgcolor: 'success.main',
+                        color: 'white',
+                        fontSize: '0.875rem',
+                        fontWeight: 600,
+                      }}
+                    >
+                      <CheckCircle sx={{ fontSize: 20 }} />
+                    </Box>
                   )}
-                  {config.text && (
-                    <div>
-                      <p className="text-sm text-gray-500">Message</p>
-                      <p className="text-gray-900">{config.text}</p>
-                    </div>
-                  )}
-                </>
-              )}
-              {/* Cookies/Muffins Options */}
-              {(config.productType === 'cookies' || config.productType === 'muffins') && (
-                <>
-                  <div>
-                    <p className="text-sm text-gray-500">Box Size</p>
-                    <p className="text-gray-900">{config.boxSize ? `Box of ${config.boxSize}` : '-'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Flavors</p>
-                    <p className="text-gray-900 capitalize">
-                      {config.boxFlavors && config.boxFlavors.length > 0
-                        ? config.boxFlavors.join(', ')
-                        : '-'}
-                    </p>
-                  </div>
-                </>
-              )}
-              {/* Delivery Details */}
-              {config.deliveryDetails && config.deliveryDetails.name && (
-                <>
-                  <div className="border-t pt-4">
-                    <span className="text-gray-600 font-bold">Delivery Details</span>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Name</p>
-                    <p className="text-gray-900">{config.deliveryDetails.name}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Address</p>
-                    <p className="text-gray-900">{config.deliveryDetails.address}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Phone</p>
-                    <p className="text-gray-900">{config.deliveryDetails.phone}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">State</p>
-                    <p className="text-gray-900">{config.deliveryDetails.state}</p>
-                  </div>
-                </>
-              )}
-              <div className="pt-4 border-t">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-500">Total</span>
-                  <span className="text-lg font-medium text-primary-600">
-                    {new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', currencyDisplay: 'narrowSymbol' }).format(config.price)}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
+                >
+                  {label}
+                </StepLabel>
+              </Step>
+            ))}
+          </Stepper>
+        </Paper>
 
-          <div className="space-x-4">
-            <button
-              onClick={() => setIsQRModalOpen(true)}
-              className="btn btn-secondary"
-            >
-              View QR Code
-            </button>
-            <button
-              onClick={handleContinueShopping}
-              className="btn btn-primary"
-            >
-              Order Another Cake
-            </button>
-            <button
-              onClick={() => navigate('/history')}
-              className="btn btn-secondary"
-            >
-              View Order History
-            </button>
-          </div>
-        </div>
-      </div>
+        {/* Main Content - Updated: Enhanced layout */}
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', md: 'row' },
+            gap: 4,
+          }}
+        >
+          {/* Order Details - Updated: Enhanced with MUI Card */}
+          <Box sx={{ flex: 2 }}>
+            <Card elevation={2} sx={{ borderRadius: 3 }}>
+              <CardContent sx={{ p: 4 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                  <Receipt sx={{ color: 'primary.main', mr: 1 }} />
+                  <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                    Order Details
+                  </Typography>
+                </Box>
+
+                <Stack spacing={3}>
+                  {/* Product Type */}
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
+                      Product
+                    </Typography>
+                    <Typography variant="body1" sx={{ textTransform: 'capitalize', fontWeight: 500 }}>
+                      {config.productType}
+                    </Typography>
+                  </Box>
+
+                  {/* Cake Options */}
+                  {config.productType === 'cake' && (
+                    <>
+                      <Box sx={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                        <Box>
+                          <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
+                            Shape
+                          </Typography>
+                          <Typography variant="body1" sx={{ textTransform: 'capitalize', fontWeight: 500 }}>
+                            {config.shape}
+                          </Typography>
+                        </Box>
+                        <Box>
+                          <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
+                            Size
+                          </Typography>
+                          <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                            {config.size}"
+                          </Typography>
+                        </Box>
+                        <Box>
+                          <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
+                            Layers
+                          </Typography>
+                          <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                            {config.layers}
+                          </Typography>
+                        </Box>
+                      </Box>
+                      
+                      <Box>
+                        <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
+                          Flavor
+                        </Typography>
+                        <Typography variant="body1" sx={{ textTransform: 'capitalize', fontWeight: 500 }}>
+                          {config.flavor}
+                        </Typography>
+                      </Box>
+
+                      {config.addons && config.addons.length > 0 && (
+                        <Box>
+                          <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
+                            Add-ons
+                          </Typography>
+                          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1 }}>
+                            {config.addons.map((addon) => (
+                              <Chip
+                                key={addon}
+                                label={addon.charAt(0).toUpperCase() + addon.slice(1)}
+                                size="small"
+                                variant="outlined"
+                              />
+                            ))}
+                          </Box>
+                        </Box>
+                      )}
+
+                      {config.text && (
+                        <Box>
+                          <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
+                            Message
+                          </Typography>
+                          <Typography variant="body1" sx={{ fontStyle: 'italic', fontWeight: 500 }}>
+                            "{config.text}"
+                          </Typography>
+                        </Box>
+                      )}
+                    </>
+                  )}
+
+                  {/* Cookies/Muffins Options */}
+                  {(config.productType === 'cookies' || config.productType === 'muffins') && (
+                    <>
+                      <Box>
+                        <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
+                          Box Size
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                          {config.boxSize ? `Box of ${config.boxSize}` : '-'}
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
+                          Flavors
+                        </Typography>
+                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1 }}>
+                          {config.boxFlavors && config.boxFlavors.length > 0
+                            ? config.boxFlavors.map((flavor) => (
+                                <Chip
+                                  key={flavor}
+                                  label={flavor}
+                                  size="small"
+                                  variant="outlined"
+                                />
+                              ))
+                            : <Typography variant="body1">-</Typography>
+                          }
+                        </Box>
+                      </Box>
+                    </>
+                  )}
+
+                  {/* Delivery Details */}
+                  {config.deliveryDetails && config.deliveryDetails.name && (
+                    <>
+                      <Divider />
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                        <LocalShipping sx={{ color: 'primary.main', mr: 1 }} />
+                        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                          Delivery Details
+                        </Typography>
+                      </Box>
+                      
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <Box>
+                          <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
+                            Name
+                          </Typography>
+                          <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                            {config.deliveryDetails.name}
+                          </Typography>
+                        </Box>
+                        <Box>
+                          <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
+                            Address
+                          </Typography>
+                          <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                            {config.deliveryDetails.address}
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', gap: 4 }}>
+                          <Box>
+                            <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
+                              Phone
+                            </Typography>
+                            <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                              {config.deliveryDetails.phone}
+                            </Typography>
+                          </Box>
+                          <Box>
+                            <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
+                              State
+                            </Typography>
+                            <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                              {config.deliveryDetails.state}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </Box>
+                    </>
+                  )}
+
+                  <Divider />
+                  
+                  {/* Total */}
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                      Total
+                    </Typography>
+                    <Typography variant="h5" sx={{ fontWeight: 700, color: 'primary.main' }}>
+                      {new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', currencyDisplay: 'narrowSymbol' }).format(config.price)}
+                    </Typography>
+                  </Box>
+                </Stack>
+              </CardContent>
+            </Card>
+          </Box>
+
+          {/* Action Buttons - Updated: Enhanced sidebar with actions */}
+          <Box sx={{ flex: 1, minWidth: 300 }}>
+            <Card elevation={2} sx={{ borderRadius: 3, p: 3 }}>
+              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                What's Next?
+              </Typography>
+              
+              <Stack spacing={2}>
+                <Button
+                  variant="outlined"
+                  startIcon={<QrCode />}
+                  onClick={() => setIsQRModalOpen(true)}
+                  sx={{
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    py: 1.5,
+                  }}
+                  fullWidth
+                >
+                  View QR Code
+                </Button>
+                
+                <Button
+                  variant="contained"
+                  startIcon={<Cake />}
+                  onClick={handleContinueShopping}
+                  sx={{
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    py: 1.5,
+                  }}
+                  fullWidth
+                >
+                  Order Another Cake
+                </Button>
+                
+                <Button
+                  variant="outlined"
+                  startIcon={<History />}
+                  onClick={() => navigate('/history')}
+                  sx={{
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    py: 1.5,
+                  }}
+                  fullWidth
+                >
+                  View Order History
+                </Button>
+              </Stack>
+
+              <Divider sx={{ my: 3 }} />
+              
+              <Alert severity="info" sx={{ borderRadius: 2 }}>
+                <Typography variant="body2">
+                  You'll receive an email confirmation shortly with your order details.
+                </Typography>
+              </Alert>
+            </Card>
+          </Box>
+        </Box>
+      </Container>
 
       {/* QR code modal for displaying order as QR */}
       <QRCodeModal
@@ -251,6 +503,6 @@ export default function ConfirmationPage() {
         onClose={() => setIsQRModalOpen(false)}
         mode="display"
       />
-    </div>
+    </Box>
   );
 } 

@@ -8,7 +8,27 @@
 // Import React for component creation.
 import React from 'react';
 // Import Link from React Router for navigation between pages.
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+// Import MUI components
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  IconButton,
+  Avatar,
+  Menu,
+  MenuItem,
+  Badge,
+  Box,
+  Container,
+} from '@mui/material';
+import {
+  ShoppingBag,
+  BakeryDining,
+  AccountCircle,
+  Menu as MenuIcon,
+} from '@mui/icons-material';
 // Import useConfig hook to access global user state and updater from context.
 import { useConfig } from '../context/ConfigContext';
 // Import signOut utility to handle user sign-out from Supabase Auth.
@@ -23,53 +43,165 @@ interface HeaderProps {
 export default function Header({ onSignInClick }: HeaderProps) {
   // Get user state and updater from context.
   const { user, setUser } = useConfig();
+  // Updated: Added location hook for active navigation highlighting and menu state
+  const location = useLocation();
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
   // Handle user sign-out by calling Supabase signOut and updating context.
   const handleSignOut = async () => {
     try {
       await signOut(); // Sign out from Supabase Auth.
       setUser(null); // Clear user state in context.
+      setAnchorEl(null); // Close menu
     } catch (error) {
       console.error('Error signing out:', error); // Log any errors.
     }
   };
 
+  // Updated: Added menu state management for user dropdown
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  // Updated: Added menu close handler
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
   return (
-    <header className="bg-white shadow-sm">
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex">
-            {/* Logo and home link */}
-            <Link to="/" className="flex items-center">
-              <span className="text-2xl font-bold text-primary-600">Productor1</span>
-            </Link>
-          </div>
-          
-          <div className="flex items-center space-x-4">
-            {/* Conditionally render navigation based on authentication state */}
+    <AppBar 
+      position="sticky" 
+      elevation={0}
+      sx={{ 
+        backgroundColor: 'rgba(248, 246, 246, 0.95)',
+        backdropFilter: 'blur(10px)',
+        borderBottom: '1px solid rgba(243, 231, 234, 0.5)',
+        color: 'text.primary'
+      }}
+    >
+      <Container maxWidth="xl">
+        <Toolbar sx={{ justifyContent: 'space-between', py: 1 }}>
+          {/* Logo Section - Updated: Added cake icon while keeping original Productor1 branding */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <BakeryDining sx={{ fontSize: 32, color: 'primary.main' }} />
+            <Typography
+              variant="h5"
+              component={Link}
+              to="/"
+              sx={{
+                fontWeight: 700,
+                color: 'text.primary',
+                textDecoration: 'none',
+                letterSpacing: '-0.015em'
+              }}
+            >
+              Productor1
+            </Typography>
+          </Box>
+
+          {/* Desktop Navigation - Updated: Kept original navigation structure with MUI styling */}
+          <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 4 }}>
+            <Button
+              component={Link}
+              to="/"
+              color={location.pathname === '/' ? 'primary' : 'inherit'}
+              sx={{ fontWeight: 500 }}
+            >
+              Home
+            </Button>
+            <Button
+              component={Link}
+              to="/customize"
+              color={location.pathname === '/customize' ? 'primary' : 'inherit'}
+              sx={{ fontWeight: 500 }}
+            >
+              Customize Cake
+            </Button>
+            {user && (
+              <Button
+                component={Link}
+                to="/history"
+                color={location.pathname === '/history' ? 'primary' : 'inherit'}
+                sx={{ fontWeight: 500 }}
+              >
+                Order History
+              </Button>
+            )}
+          </Box>
+
+          {/* Actions Section - Updated: Enhanced with shopping cart and improved user menu */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {/* Shopping Cart - New: Added shopping cart with badge for better UX */}
+            <IconButton
+              size="large"
+              sx={{ 
+                backgroundColor: 'grey.50',
+                '&:hover': { backgroundColor: 'primary.main', color: 'white' }
+              }}
+            >
+              <Badge badgeContent={0} color="primary">
+                <ShoppingBag />
+              </Badge>
+            </IconButton>
+
+            {/* User Authentication - Updated: Enhanced with avatar and dropdown menu */}
             {user ? (
               <>
-                {/* Link to order history for authenticated users */}
-                <Link to="/history" className="text-gray-700 hover:text-primary-600">
-                  Order History
-                </Link>
-                {/* Sign out button */}
-                <button
-                  onClick={handleSignOut}
-                  className="btn btn-secondary"
+                <IconButton
+                  size="large"
+                  onClick={handleMenuOpen}
+                  sx={{ ml: 1 }}
                 >
-                  Sign Out
-                </button>
+                  <Avatar
+                    src={user.user_metadata?.avatar_url}
+                    sx={{ width: 32, height: 32 }}
+                  >
+                    {user.email?.charAt(0).toUpperCase()}
+                  </Avatar>
+                </IconButton>
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleMenuClose}
+                  transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                  anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                >
+                  <MenuItem onClick={handleMenuClose} component={Link} to="/history">
+                    Order History
+                  </MenuItem>
+                  <MenuItem onClick={handleSignOut}>
+                    Sign Out
+                  </MenuItem>
+                </Menu>
               </>
             ) : (
-              // Sign in button for unauthenticated users
-              <button onClick={onSignInClick} className="btn btn-primary">
+              <Button
+                variant="contained"
+                onClick={onSignInClick}
+                sx={{
+                  ml: 1,
+                  borderRadius: 3,
+                  px: 3,
+                  boxShadow: '0 0 20px rgba(239, 57, 102, 0.2)',
+                  '&:hover': {
+                    boxShadow: '0 0 30px rgba(239, 57, 102, 0.4)',
+                  }
+                }}
+              >
                 Sign In
-              </button>
+              </Button>
             )}
-          </div>
-        </div>
-      </nav>
-    </header>
+
+            {/* Mobile Menu Button - New: Added for responsive design */}
+            <IconButton
+              size="large"
+              sx={{ display: { xs: 'flex', md: 'none' }, ml: 1 }}
+            >
+              <MenuIcon />
+            </IconButton>
+          </Box>
+        </Toolbar>
+      </Container>
+    </AppBar>
   );
 }

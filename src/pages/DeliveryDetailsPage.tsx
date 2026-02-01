@@ -7,6 +7,31 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+// Import MUI components for enhanced delivery details UI
+import {
+  Box,
+  Container,
+  Paper,
+  Typography,
+  TextField,
+  Button,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Alert,
+  Stepper,
+  Step,
+  StepLabel,
+  Divider,
+  Stack,
+} from '@mui/material';
+import {
+  LocalShipping,
+  Payment,
+  CheckCircle,
+  ArrowBack,
+} from '@mui/icons-material';
 import { useConfig } from '../context/ConfigContext';
 import PriceSummary from '../components/PriceSummary';
 import PaymentForm from '../components/PaymentForm';
@@ -18,6 +43,9 @@ const NIGERIAN_STATES = [
   'Jigawa', 'Kaduna', 'Kano', 'Katsina', 'Kebbi', 'Kogi', 'Kwara', 'Lagos', 'Nasarawa',
   'Niger', 'Ogun', 'Ondo', 'Osun', 'Oyo', 'Plateau', 'Rivers', 'Sokoto', 'Taraba', 'Yobe', 'Zamfara'
 ];
+
+// Stepper steps
+const steps = ['Customize', 'Delivery Details', 'Payment', 'Confirmation'];
 
 export default function DeliveryDetailsPage() {
   const navigate = useNavigate();
@@ -34,8 +62,9 @@ export default function DeliveryDetailsPage() {
   const [paymentError, setPaymentError] = useState<string | null>(null);
 
   // Handle input changes
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | { target: { name: string; value: string } }) => {
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
   };
 
   // Validate form fields
@@ -78,95 +107,227 @@ export default function DeliveryDetailsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Delivery Details</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Delivery Form */}
-          <div>
-            <form
-              onSubmit={e => { e.preventDefault(); handleProceed(); }}
-              className="space-y-4 bg-white p-6 rounded-lg shadow-sm"
+    <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50', py: 4 }}>
+      <Container maxWidth="lg">
+        {/* Page Header with Stepper - New: Added progress stepper */}
+        <Box sx={{ mb: 4 }}>
+          <Button
+            startIcon={<ArrowBack />}
+            onClick={() => navigate('/customize')}
+            sx={{ mb: 3, textTransform: 'none' }}
+          >
+            Back to Customizer
+          </Button>
+          
+          <Typography variant="h4" component="h1" sx={{ fontWeight: 700, mb: 3 }}>
+            Delivery Details
+          </Typography>
+          
+          {/* Progress Stepper - New: Added order progress */}
+          <Paper elevation={1} sx={{ p: 3, borderRadius: 2, mb: 4 }}>
+            <Stepper activeStep={1} alternativeLabel>
+              {steps.map((label, index) => (
+                <Step key={label}>
+                  <StepLabel
+                    StepIconComponent={({ active, completed }) => (
+                      <Box
+                        sx={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: '50%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          bgcolor: completed ? 'success.main' : active ? 'primary.main' : 'grey.300',
+                          color: 'white',
+                          fontSize: '0.875rem',
+                          fontWeight: 600,
+                        }}
+                      >
+                        {completed ? <CheckCircle sx={{ fontSize: 20 }} /> : index + 1}
+                      </Box>
+                    )}
+                  >
+                    {label}
+                  </StepLabel>
+                </Step>
+              ))}
+            </Stepper>
+          </Paper>
+        </Box>
+
+        {/* Main Content - Updated: Enhanced layout with MUI */}
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', md: 'row' },
+            gap: 4,
+            alignItems: 'flex-start',
+          }}
+        >
+          {/* Delivery Form - Updated: Enhanced with MUI form components */}
+          <Box sx={{ flex: 1 }}>
+            <Paper
+              elevation={2}
+              sx={{
+                p: 4,
+                borderRadius: 3,
+              }}
             >
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                <input
-                  type="text"
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                <LocalShipping sx={{ color: 'primary.main', mr: 1 }} />
+                <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                  Delivery Information
+                </Typography>
+              </Box>
+
+              <Box
+                component="form"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleProceed();
+                }}
+                sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
+              >
+                {/* Name Field - Updated: MUI TextField */}
+                <TextField
+                  label="Full Name"
                   name="name"
                   value={form.name}
                   onChange={handleChange}
-                  className="input"
                   required
+                  fullWidth
+                  variant="outlined"
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                <input
-                  type="text"
+
+                {/* Address Field - Updated: MUI TextField */}
+                <TextField
+                  label="Delivery Address"
                   name="address"
                   value={form.address}
                   onChange={handleChange}
-                  className="input"
                   required
+                  fullWidth
+                  multiline
+                  rows={3}
+                  variant="outlined"
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                  placeholder="Enter your complete delivery address"
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                <input
-                  type="tel"
+
+                {/* Phone Field - Updated: MUI TextField */}
+                <TextField
+                  label="Phone Number"
                   name="phone"
                   value={form.phone}
                   onChange={handleChange}
-                  className="input"
                   required
+                  fullWidth
+                  variant="outlined"
+                  type="tel"
                   placeholder="e.g. 08012345678"
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
-                <select
-                  name="state"
-                  value={form.state}
-                  onChange={handleChange}
-                  className="input"
-                  required
-                >
-                  <option value="">Select State</option>
-                  {NIGERIAN_STATES.map(state => (
-                    <option key={state} value={state}>{state}</option>
-                  ))}
-                </select>
-              </div>
-              {error && <div className="text-red-600 text-sm mt-2">{error}</div>}
-              {!showPayment && (
-                <button
-                  type="submit"
-                  className="btn btn-primary w-full mt-4"
-                >
-                  Proceed to Payment
-                </button>
-              )}
-            </form>
-          </div>
-          {/* Order Summary and Payment */}
-          <div>
-            <PriceSummary />
+
+                {/* State Field - Updated: MUI Select */}
+                <FormControl fullWidth required>
+                  <InputLabel>State</InputLabel>
+                  <Select
+                    name="state"
+                    value={form.state}
+                    onChange={handleChange}
+                    label="State"
+                    sx={{ borderRadius: 2 }}
+                  >
+                    {NIGERIAN_STATES.map((state) => (
+                      <MenuItem key={state} value={state}>
+                        {state}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                {/* Error Display - Updated: MUI Alert */}
+                {error && (
+                  <Alert severity="error" sx={{ borderRadius: 2 }}>
+                    {error}
+                  </Alert>
+                )}
+
+                {/* Proceed Button - Updated: Enhanced MUI Button */}
+                {!showPayment && (
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    size="large"
+                    endIcon={<Payment />}
+                    sx={{
+                      mt: 2,
+                      py: 1.5,
+                      borderRadius: 2,
+                      textTransform: 'none',
+                      fontSize: '1.1rem',
+                      fontWeight: 600,
+                    }}
+                  >
+                    Proceed to Payment
+                  </Button>
+                )}
+              </Box>
+            </Paper>
+          </Box>
+
+          {/* Order Summary and Payment - Updated: Enhanced sidebar */}
+          <Box sx={{ flex: 1, minWidth: 300 }}>
+            {/* Price Summary - Updated: Enhanced wrapper */}
+            <Paper
+              elevation={2}
+              sx={{
+                borderRadius: 3,
+                mb: 3,
+                overflow: 'hidden',
+              }}
+            >
+              <PriceSummary />
+            </Paper>
+
+            {/* Payment Section - Updated: Enhanced payment UI */}
             {showPayment && user && (
-              <div className="mt-6">
+              <Paper
+                elevation={2}
+                sx={{
+                  p: 4,
+                  borderRadius: 3,
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                  <Payment sx={{ color: 'primary.main', mr: 1 }} />
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                    Payment
+                  </Typography>
+                </Box>
+
+                <Divider sx={{ mb: 3 }} />
+
                 <PaymentForm
                   amount={config.price}
                   userEmail={user.email || ''}
                   onSuccess={handlePaymentSuccess}
                   onError={handlePaymentError}
                 />
+
+                {/* Payment Error - Updated: MUI Alert */}
                 {paymentError && (
-                  <div className="text-red-600 text-sm mt-2">{paymentError}</div>
+                  <Alert severity="error" sx={{ mt: 2, borderRadius: 2 }}>
+                    {paymentError}
+                  </Alert>
                 )}
-              </div>
+              </Paper>
             )}
-          </div>
-        </div>
-      </div>
-    </div>
+          </Box>
+        </Box>
+      </Container>
+    </Box>
   );
 } 
