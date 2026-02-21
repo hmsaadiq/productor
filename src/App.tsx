@@ -15,6 +15,8 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { muiTheme } from './theme/muiTheme';
 // Import the ConfigProvider, which supplies global app state (user, config) via React Context.
 import { ConfigProvider } from './context/ConfigContext';
+// Import the CartProvider for shopping cart functionality
+import { CartProvider } from './context/CartContext';
 // Import the Header component, which displays the top navigation bar.
 import Header from './components/Header';
 // Import page components for different routes.
@@ -22,12 +24,17 @@ import HomePage from './pages/HomePage';
 import ConfiguratorPage from './pages/ConfiguratorPage';
 import ConfirmationPage from './pages/ConfirmationPage';
 import OrderHistoryPage from './pages/OrderHistoryPage';
+import CartPage from './pages/CartPage';
 // Import ProtectedRoute, which restricts access to authenticated users.
 import ProtectedRoute from './components/ProtectedRoute';
+// Import AdminRoute for admin-only pages
+import AdminRoute from './components/AdminRoute';
 // Import LoginModal, a modal dialog for user authentication.
 import LoginModal from './components/LoginModal';
 // Import DeliveryDetailsPage (to be created)
 import DeliveryDetailsPage from './pages/DeliveryDetailsPage';
+// Import AdminDashboard
+import AdminDashboard from './pages/AdminDashboard';
 
 // The main App component sets up context, routing, and layout for the entire frontend.
 function App() {
@@ -40,6 +47,7 @@ function App() {
       <CssBaseline />
       {/* Wrap the app in ConfigProvider to supply global state (user, config) to all components. */}
       <ConfigProvider>
+        <CartProvider>
         {/* Set up the React Router for SPA navigation. */}
         <Router>
         {/* Main app container with background styling. */}
@@ -52,6 +60,8 @@ function App() {
             <Route path="/" element={<HomePage />} />
             {/* Cake configurator page ("/customize") */}
             <Route path="/customize" element={<ConfiguratorPage />} />
+            {/* Shopping cart page ("/cart") */}
+            <Route path="/cart" element={<CartPage />} />
             {/* Delivery details page ("/delivery") - new step before confirmation/payment */}
             <Route path="/delivery" element={<DeliveryDetailsPage />} />
             {/* Order confirmation page ("/confirmation") */}
@@ -65,6 +75,15 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            {/* Admin dashboard page ("/admin") is protected and requires admin access. */}
+            <Route
+              path="/admin"
+              element={
+                <AdminRoute>
+                  <AdminDashboard />
+                </AdminRoute>
+              }
+            />
           </Routes>
           {/* Login modal is shown when user needs to authenticate. */}
           <LoginModal
@@ -73,6 +92,7 @@ function App() {
           />
         </div>
         </Router>
+        </CartProvider>
       </ConfigProvider>
     </ThemeProvider>
   );

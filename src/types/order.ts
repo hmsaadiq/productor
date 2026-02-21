@@ -33,6 +33,16 @@ export interface Order {
   };
   status: 'pending' | 'confirmed' | 'completed'; // Order status.
   createdAt: string; // ISO timestamp when order was created (Supabase uses timestamptz).
+  created_at?: string; // Database field name
+  // New cart-based fields
+  items?: any[]; // Cart items array
+  total_price?: number; // Total price for cart orders
+  shipping_address?: {
+    name: string;
+    address: string;
+    phone: string;
+    state: string;
+  };
 }
 
 // OrderConfig type alias for the config property of an order.

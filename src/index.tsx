@@ -14,6 +14,18 @@ import './index.css';
 // Import the root App component, which contains the main application logic and routing.
 import App from './App';
 
+// Add global error handler for better mobile debugging
+window.addEventListener('error', (event) => {
+  console.error('Global error:', event.error);
+  console.error('Error message:', event.message);
+  console.error('Error filename:', event.filename);
+  console.error('Error line:', event.lineno);
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('Unhandled promise rejection:', event.reason);
+});
+
 
 // Create a root for React rendering using the new React 18+ API.
 // This attaches React to the HTML element with id 'root' in public/index.html.
@@ -21,8 +33,13 @@ const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement // Type assertion for TypeScript.
 );
 // Render the App component inside React.StrictMode for highlighting potential problems in development.
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+try {
+  root.render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  );
+} catch (error) {
+  console.error('Error rendering app:', error);
+  document.body.innerHTML = '<div style="padding: 20px; color: red;">Error loading app. Check console for details.</div>';
+}

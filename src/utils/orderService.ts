@@ -11,6 +11,8 @@ import { supabase } from './supabase';
 import { User } from '@supabase/supabase-js';
 // Import Order and OrderConfig types for type safety.
 import { Order, OrderConfig } from '../types/order';
+// Import CartItem type
+import { CartItem } from '../context/CartContext';
 
 // Utility to recursively remove undefined fields from an object (PostgreSQL handles null but undefined should be cleaned)
 // function removeUndefined(obj: any): any {
@@ -28,7 +30,49 @@ import { Order, OrderConfig } from '../types/order';
 //   return obj;
 // }
 
-// Create a new order in Supabase for the authenticated user.
+// Create a new order from cart items
+export const createOrderFromCart = async (user: User, cartItems: CartItem[], deliveryDetails: any) => {
+  try {
+    if (!cartItems || cartItems.length === 0) {
+      throw new Error('Cart is empty');
+    }
+
+    // Calculate total price
+    const totalPrice = cartItems.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
+    const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+
+    // Create order object with cart items
+    const order = {
+      user_id: user.id,
+      config: cartItems[0]?.customization || {}, // Use first item's config for compatibility
+      items: cartItems,
+      status: 'pending',
+      total_price: totalPrice,
+      shipping_address: deliveryDetails,
+    };
+    
+    console.log('Order to insert:', JSON.stringify(order, null, 2));
+
+    // Insert order into Supabase 'orders' table.
+    const { data, error } = await supabase
+      .from('orders')
+      .insert(order)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Supabase error details:', error);
+      throw new Error(`Database error: ${error.message}`);
+    }
+
+    return data.id;
+  } catch (error) {
+    console.error('Error creating order from cart:', error);
+    throw error;
+  }
+};
+
+// Create a new order in Supabase for the authenticated user (legacy single-item).
 export const createOrder = async (user: User, config: OrderConfig) => {
   try {
     // Validate config before creating order

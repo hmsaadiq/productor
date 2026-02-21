@@ -25,9 +25,12 @@ import {
   ArrowForward,
   Login,
   CheckCircle,
+  ShoppingCart,
 } from '@mui/icons-material';
 // Import useConfig hook to access global state (user, config).
 import { useConfig } from '../context/ConfigContext';
+// Import useCart hook to add items to cart
+import { useCart } from '../context/CartContext';
 // Import CakeCustomizer for cake options UI.
 import CakeCustomizer from '../components/CakeCustomizer';
 // Import PriceSummary for displaying current config and price.
@@ -42,11 +45,15 @@ export default function ConfiguratorPage() {
   // Get navigate function for routing.
   const navigate = useNavigate();
   // Get config and user from context.
-  const { config, user } = useConfig();
+  const { config, user, resetConfig } = useConfig();
+  // Get cart functions from context
+  const { addToCart } = useCart();
   // Local state for login modal visibility.
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   // Local state for QR code modal visibility.
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
+  // Local state for add to cart loading
+  const [addingToCart, setAddingToCart] = useState(false);
 
   // Boolean for whether the user can proceed (must select required fields based on product)
   const canProceed = (() => {
@@ -58,13 +65,31 @@ export default function ConfiguratorPage() {
     return false;
   })();
 
-  // Handle "Next" button click (go to delivery details page)
-  const handleNext = () => {
+  // Handle "Add to Cart" button click - NEW FLOW: Add to cart instead of direct checkout
+  const handleAddToCart = async () => {
     if (!user) {
-      setIsLoginModalOpen(true); // Require login if not authenticated.
+      setIsLoginModalOpen(true);
       return;
     }
-    navigate('/delivery'); // Go to delivery details page
+    
+    setAddingToCart(true);
+    try {
+      await addToCart({
+        productType: config.productType,
+        customization: config,
+        quantity: 1,
+        unitPrice: config.price,
+      });
+      // Reset the configuration after adding to cart
+      resetConfig();
+      // Navigate to cart page
+      navigate('/cart');
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      alert('Failed to add item to cart');
+    } finally {
+      setAddingToCart(false);
+    }
   };
 
   // Render the configurator UI - Updated: Enhanced with MUI layout and components.
@@ -173,13 +198,13 @@ export default function ConfiguratorPage() {
 
                   <Divider sx={{ my: 1 }} />
 
-                  {/* Proceed Button - Updated: Enhanced with better UX */}
+                  {/* Add to Cart Button - NEW FLOW: Primary action */}
                   <Button
                     variant="contained"
                     size="large"
-                    endIcon={user ? <ArrowForward /> : <Login />}
-                    onClick={handleNext}
-                    disabled={!canProceed}
+                    startIcon={<ShoppingCart />}
+                    onClick={handleAddToCart}
+                    disabled={!canProceed || addingToCart}
                     sx={{
                       borderRadius: 2,
                       textTransform: 'none',
@@ -189,7 +214,7 @@ export default function ConfiguratorPage() {
                     }}
                     fullWidth
                   >
-                    {user ? 'Next: Delivery Details' : 'Login to Continue'}
+                    {addingToCart ? 'Adding to Cart...' : user ? 'Add to Cart' : 'Login to Add to Cart'}
                   </Button>
 
                   {/* Help Text - New: Added helpful guidance */}
