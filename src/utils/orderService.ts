@@ -13,6 +13,7 @@ import { User } from '@supabase/supabase-js';
 import { Order, OrderConfig } from '../types/order';
 // Import CartItem type
 import { CartItem } from '../context/CartContext';
+import { canCancelOrder } from './orderStatusRules';
 
 // Utility to recursively remove undefined fields from an object (PostgreSQL handles null but undefined should be cleaned)
 // function removeUndefined(obj: any): any {
@@ -150,5 +151,72 @@ export const getUserOrders = async (user: User): Promise<Order[]> => {
   } catch (error) {
     console.error('Error fetching user orders:', error);
     throw error;
+  }
+};
+
+// Derive user role from Supabase auth metadata
+const getUserRole = async (): Promise<'user' | 'admin'> => {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Not authenticated');
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('is_admin')
+    .eq('id', user.id)
+    .single();
+
+  return profile?.is_admin ? 'admin' : 'user';
+};
+
+// Cancel an order with validation and concurrency control
+export const cancelOrder = async (
+  orderId: string,
+  reason: string
+): Promise<{ success: boolean; error?: string }> => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { success: false, error: 'Not authenticated' };
+    }
+
+    const userRole = await getUserRole();
+    const numericId = Number(orderId);
+
+    const { data: order, error: fetchError } = await supabase
+      .from('orders')
+      .select('id, status, updated_at')
+      .eq('id', numericId)
+      .single();
+
+    if (fetchError || !order) {
+      return { success: false, error: 'Order not found' };
+    }
+
+    const validation = canCancelOrder(order.status, userRole);
+    if (!validation.allowed) {
+      return { success: false, error: validation.reason };
+    }
+
+    const { error: updateError } = await supabase
+      .from('orders')
+      .update({
+        status: 'cancelled',
+        previous_status: order.status,
+        cancelled_at: new Date().toISOString(),
+        cancelled_by: user.id,
+        cancelled_by_role: userRole,
+        cancellation_reason: reason || null,
+      })
+      .eq('id', numericId)
+      .eq('status', order.status);
+
+    if (updateError) {
+      return { success: false, error: 'Failed to cancel order' };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Cancel order exception:', error);
+    return { success: false, error: 'An error occurred' };
   }
 };
