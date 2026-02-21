@@ -6,7 +6,7 @@
 // Security: No direct security features; only displays static and navigational content.
 
 // Import React and useState for component logic and state management.
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 // Import useNavigate from React Router for programmatic navigation.
 import { useNavigate } from 'react-router-dom';
 // Import MUI components for enhanced homepage UI
@@ -31,13 +31,33 @@ import {
 } from '@mui/icons-material';
 // Import QRCodeModal for displaying/scanning QR codes.
 import QRCodeModal from '../components/QRCodeModal';
+import { useConfig } from '../context/ConfigContext';
+import { supabase } from '../utils/supabase';
 
 // HomePage component displays the landing UI and navigation options - Updated: Enhanced with MUI design.
 export default function HomePage() {
   // Get navigate function for routing.
   const navigate = useNavigate();
+  const { user } = useConfig();
   // Local state to control QR code modal visibility.
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
+
+  // Redirect admin to admin dashboard
+  useEffect(() => {
+    const checkAdmin = async () => {
+      if (user) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', user.id)
+          .single();
+        if (data?.is_admin) {
+          navigate('/admin');
+        }
+      }
+    };
+    checkAdmin();
+  }, [user, navigate]);
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>

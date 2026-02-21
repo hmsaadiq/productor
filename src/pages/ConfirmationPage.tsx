@@ -51,57 +51,16 @@ export default function ConfirmationPage() {
   // Get navigate function for routing.
   const navigate = useNavigate();
   // Get config, user, and resetConfig from context.
-  const { config, user, resetConfig } = useConfig();
-  // Local state for order ID after creation.
-  const [orderId, setOrderId] = useState<number | null>(null);
-  // Local state for error messages.
-  const [error, setError] = useState<string | null>(null);
-  // Local state for loading indicator.
-  const [loading, setLoading] = useState(true);
+  const { user, resetConfig } = useConfig();
   // Local state for QR code modal visibility.
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
-  // Ref to prevent duplicate order creation
-  const orderCreated = useRef(false);
 
+  // Redirect if not logged in
   useEffect(() => {
     if (!user) {
       navigate('/');
-      return;
     }
-    if (orderId !== null || orderCreated.current) return;
-    
-    const createNewOrder = async () => {
-      if (orderCreated.current) return;
-      orderCreated.current = true;
-      try {
-        setLoading(true);
-        const id = await createOrder(user, config);
-        setOrderId(id);
-        setError(null);
-        
-        // Email notification disabled for now
-        // try {
-        //   await fetch('https://fcnxfgvbemgdrrcbmeie.supabase.co/functions/v1/send-order-email', {
-        //     method: 'POST',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify({ record: { id, config, status: 'pending', created_at: new Date().toISOString() } })
-        //   });
-        //   console.log('Email notification sent successfully');
-        // } catch (emailError) {
-        //   console.log('Email notification failed:', emailError);
-        //   // Don't fail the order if email fails
-        // }
-      } catch (err) {
-        orderCreated.current = false; // Reset on error
-        console.error('Full error object:', err);
-        setError(`Failed to create order: ${err instanceof Error ? err.message : 'Unknown error'}`);
-        console.error('Error creating order:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    createNewOrder();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user, navigate]);
 
   // Handle "Order Another Cake" button click.
   const handleContinueShopping = () => {
@@ -109,64 +68,8 @@ export default function ConfirmationPage() {
     navigate('/customize'); // Go to configurator page.
   };
 
-  // Show loading UI while order is being created - Updated: Enhanced with MUI components.
-  if (loading) {
-    return (
-      <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50', py: 8 }}>
-        <Container maxWidth="sm">
-          <Paper
-            elevation={2}
-            sx={{
-              p: 6,
-              textAlign: 'center',
-              borderRadius: 3,
-            }}
-          >
-            <CircularProgress size={60} thickness={4} sx={{ mb: 3 }} />
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
-              Processing Your Order
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              Please wait while we confirm your order details...
-            </Typography>
-          </Paper>
-        </Container>
-      </Box>
-    );
-  }
-
-  // Show error UI if order creation failed - Updated: Enhanced with MUI components.
-  if (error) {
-    return (
-      <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50', py: 8 }}>
-        <Container maxWidth="sm">
-          <Paper
-            elevation={2}
-            sx={{
-              p: 6,
-              textAlign: 'center',
-              borderRadius: 3,
-            }}
-          >
-            <Alert severity="error" sx={{ mb: 4, borderRadius: 2 }}>
-              {error}
-            </Alert>
-            <Button
-              variant="contained"
-              onClick={() => navigate('/customize')}
-              sx={{
-                borderRadius: 2,
-                textTransform: 'none',
-                px: 4,
-                py: 1.5,
-              }}
-            >
-              Try Again
-            </Button>
-          </Paper>
-        </Container>
-      </Box>
-    );
+  if (!user) {
+    return null;
   }
 
   // Render the confirmation UI - Updated: Enhanced with MUI components and better layout.
@@ -197,7 +100,7 @@ export default function ConfirmationPage() {
             Thank you for your order
           </Typography>
           <Chip
-            label={`Order #${orderId?.toString().slice(-6)}`}
+            label="Order Completed Successfully"
             color="primary"
             variant="outlined"
             sx={{ fontSize: '1rem', px: 2, py: 1 }}
@@ -244,192 +147,22 @@ export default function ConfirmationPage() {
             gap: 4,
           }}
         >
-          {/* Order Details - Updated: Enhanced with MUI Card */}
+          {/* Order Success Message */}
           <Box sx={{ flex: 2 }}>
             <Card elevation={2} sx={{ borderRadius: 3 }}>
-              <CardContent sx={{ p: 4 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                  <Receipt sx={{ color: 'primary.main', mr: 1 }} />
-                  <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                    Order Details
+              <CardContent sx={{ p: 4, textAlign: 'center' }}>
+                <CheckCircle sx={{ fontSize: 60, color: 'success.main', mb: 2 }} />
+                <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>
+                  Your Order Has Been Placed!
+                </Typography>
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                  Thank you for your order. We'll start preparing your items right away.
+                </Typography>
+                <Alert severity="success" sx={{ borderRadius: 2 }}>
+                  <Typography variant="body2">
+                    You'll receive an email confirmation with your order details shortly.
                   </Typography>
-                </Box>
-
-                <Stack spacing={3}>
-                  {/* Product Type */}
-                  <Box>
-                    <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
-                      Product
-                    </Typography>
-                    <Typography variant="body1" sx={{ textTransform: 'capitalize', fontWeight: 500 }}>
-                      {config.productType}
-                    </Typography>
-                  </Box>
-
-                  {/* Cake Options */}
-                  {config.productType === 'cake' && (
-                    <>
-                      <Box sx={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                        <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
-                            Shape
-                          </Typography>
-                          <Typography variant="body1" sx={{ textTransform: 'capitalize', fontWeight: 500 }}>
-                            {config.shape}
-                          </Typography>
-                        </Box>
-                        <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
-                            Size
-                          </Typography>
-                          <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                            {config.size}"
-                          </Typography>
-                        </Box>
-                        <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
-                            Layers
-                          </Typography>
-                          <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                            {config.layers}
-                          </Typography>
-                        </Box>
-                      </Box>
-                      
-                      <Box>
-                        <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
-                          Flavor
-                        </Typography>
-                        <Typography variant="body1" sx={{ textTransform: 'capitalize', fontWeight: 500 }}>
-                          {config.flavor}
-                        </Typography>
-                      </Box>
-
-                      {config.addons && config.addons.length > 0 && (
-                        <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
-                            Add-ons
-                          </Typography>
-                          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1 }}>
-                            {config.addons.map((addon) => (
-                              <Chip
-                                key={addon}
-                                label={addon.charAt(0).toUpperCase() + addon.slice(1)}
-                                size="small"
-                                variant="outlined"
-                              />
-                            ))}
-                          </Box>
-                        </Box>
-                      )}
-
-                      {config.text && (
-                        <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
-                            Message
-                          </Typography>
-                          <Typography variant="body1" sx={{ fontStyle: 'italic', fontWeight: 500 }}>
-                            "{config.text}"
-                          </Typography>
-                        </Box>
-                      )}
-                    </>
-                  )}
-
-                  {/* Cookies/Muffins Options */}
-                  {(config.productType === 'cookies' || config.productType === 'muffins') && (
-                    <>
-                      <Box>
-                        <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
-                          Box Size
-                        </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                          {config.boxSize ? `Box of ${config.boxSize}` : '-'}
-                        </Typography>
-                      </Box>
-                      <Box>
-                        <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
-                          Flavors
-                        </Typography>
-                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1 }}>
-                          {config.boxFlavors && config.boxFlavors.length > 0
-                            ? config.boxFlavors.map((flavor) => (
-                                <Chip
-                                  key={flavor}
-                                  label={flavor}
-                                  size="small"
-                                  variant="outlined"
-                                />
-                              ))
-                            : <Typography variant="body1">-</Typography>
-                          }
-                        </Box>
-                      </Box>
-                    </>
-                  )}
-
-                  {/* Delivery Details */}
-                  {config.deliveryDetails && config.deliveryDetails.name && (
-                    <>
-                      <Divider />
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                        <LocalShipping sx={{ color: 'primary.main', mr: 1 }} />
-                        <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                          Delivery Details
-                        </Typography>
-                      </Box>
-                      
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
-                            Name
-                          </Typography>
-                          <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                            {config.deliveryDetails.name}
-                          </Typography>
-                        </Box>
-                        <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
-                            Address
-                          </Typography>
-                          <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                            {config.deliveryDetails.address}
-                          </Typography>
-                        </Box>
-                        <Box sx={{ display: 'flex', gap: 4 }}>
-                          <Box>
-                            <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
-                              Phone
-                            </Typography>
-                            <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                              {config.deliveryDetails.phone}
-                            </Typography>
-                          </Box>
-                          <Box>
-                            <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
-                              State
-                            </Typography>
-                            <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                              {config.deliveryDetails.state}
-                            </Typography>
-                          </Box>
-                        </Box>
-                      </Box>
-                    </>
-                  )}
-
-                  <Divider />
-                  
-                  {/* Total */}
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                      Total
-                    </Typography>
-                    <Typography variant="h5" sx={{ fontWeight: 700, color: 'primary.main' }}>
-                      {new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', currencyDisplay: 'narrowSymbol' }).format(config.price)}
-                    </Typography>
-                  </Box>
-                </Stack>
+                </Alert>
               </CardContent>
             </Card>
           </Box>
@@ -443,20 +176,6 @@ export default function ConfirmationPage() {
               
               <Stack spacing={2}>
                 <Button
-                  variant="outlined"
-                  startIcon={<QrCode />}
-                  onClick={() => setIsQRModalOpen(true)}
-                  sx={{
-                    borderRadius: 2,
-                    textTransform: 'none',
-                    py: 1.5,
-                  }}
-                  fullWidth
-                >
-                  View QR Code
-                </Button>
-                
-                <Button
                   variant="contained"
                   startIcon={<Cake />}
                   onClick={handleContinueShopping}
@@ -467,7 +186,7 @@ export default function ConfirmationPage() {
                   }}
                   fullWidth
                 >
-                  Order Another Cake
+                  Order More Items
                 </Button>
                 
                 <Button
@@ -484,25 +203,17 @@ export default function ConfirmationPage() {
                   View Order History
                 </Button>
               </Stack>
-
-              <Divider sx={{ my: 3 }} />
-              
-              <Alert severity="info" sx={{ borderRadius: 2 }}>
-                <Typography variant="body2">
-                  You'll receive an email confirmation shortly with your order details.
-                </Typography>
-              </Alert>
             </Card>
           </Box>
         </Box>
       </Container>
 
       {/* QR code modal for displaying order as QR */}
-      <QRCodeModal
+      {/* <QRCodeModal
         isOpen={isQRModalOpen}
         onClose={() => setIsQRModalOpen(false)}
         mode="display"
-      />
+      /> */}
     </Box>
   );
 } 

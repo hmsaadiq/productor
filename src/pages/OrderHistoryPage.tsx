@@ -28,6 +28,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  IconButton,
 } from '@mui/material';
 import {
   History,
@@ -41,6 +42,7 @@ import {
   CheckCircle,
   Schedule,
   Refresh,
+  Edit,
 } from '@mui/icons-material';
 // Import useConfig hook to access global user state from context.
 import { useConfig } from '../context/ConfigContext';
@@ -48,6 +50,9 @@ import { useConfig } from '../context/ConfigContext';
 import { getUserOrders } from '../utils/orderService';
 // Import Order type for type safety.
 import { Order } from '../types/order';
+// Import supabase for real-time subscriptions
+import { supabase } from '../utils/supabase';
+import EditOrderModal from '../components/EditOrderModal';
 
 // OrderHistoryPage component displays the user's order history - Updated: Enhanced with MUI design.
 export default function OrderHistoryPage() {
@@ -63,6 +68,10 @@ export default function OrderHistoryPage() {
   const [error, setError] = useState<string | null>(null);
   // Local state for status filter.
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  // Local state for status update notification
+  const [statusUpdateNotification, setStatusUpdateNotification] = useState<string | null>(null);
+  // State for edit modal
+  const [editingOrder, setEditingOrder] = useState<Order | null>(null);
 
   // useEffect: Fetch user's orders when component mounts or user changes.
   useEffect(() => {
@@ -84,6 +93,38 @@ export default function OrderHistoryPage() {
     };
 
     fetchOrders();
+
+    // Set up real-time subscription for order updates
+    if (user) {
+      const subscription = supabase
+        .channel('user-orders')
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'orders',
+            filter: `user_id=eq.${user.id}`
+          },
+          (payload) => {
+            console.log('Order updated:', payload);
+            // Update the specific order in state
+            setOrders(prev => 
+              prev.map(order => 
+                order.id === payload.new.id ? { ...order, ...payload.new } : order
+              )
+            );
+            // Show notification
+            setStatusUpdateNotification(`Order #${payload.new.id.toString().slice(-6)} status updated to ${payload.new.status}`);
+            setTimeout(() => setStatusUpdateNotification(null), 5000);
+          }
+        )
+        .subscribe();
+
+      return () => {
+        subscription.unsubscribe();
+      };
+    }
   }, [user]);
 
   // Filter orders based on status
@@ -100,7 +141,14 @@ export default function OrderHistoryPage() {
     total: orders.length,
     completed: orders.filter(order => order.status === 'completed').length,
     pending: orders.filter(order => order.status === 'pending').length,
-    totalSpent: orders.reduce((sum, order) => sum + order.config.price, 0),
+    totalSpent: orders.reduce((sum, order) => {
+      if (order.total_price) {
+        return sum + order.total_price;
+      } else if (order.config?.price) {
+        return sum + order.config.price;
+      }
+      return sum;
+    }, 0),
   };
 
   // Get status color
@@ -110,6 +158,28 @@ export default function OrderHistoryPage() {
       case 'confirmed': return 'info';
       case 'pending': return 'warning';
       default: return 'default';
+    }
+  };
+
+  // Check if order can be edited
+  const canEditOrder = (status: string) => {
+    return status === 'pending' || status === 'confirmed';
+  };
+
+  // Handle edit order
+  const handleEditOrder = (order: Order) => {
+    setEditingOrder(order);
+  };
+
+  // Refresh orders after edit
+  const handleEditSuccess = async () => {
+    if (!user) return;
+    try {
+      const userOrders = await getUserOrders(user);
+      setOrders(userOrders);
+      setFilteredOrders(userOrders);
+    } catch (err) {
+      console.error('Error reloading orders:', err);
     }
   };
 
@@ -178,6 +248,17 @@ export default function OrderHistoryPage() {
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50', py: 4 }}>
       <Container maxWidth="lg">
+        {/* Status Update Notification */}
+        {statusUpdateNotification && (
+          <Alert 
+            severity="info" 
+            onClose={() => setStatusUpdateNotification(null)}
+            sx={{ mb: 3 }}
+          >
+            {statusUpdateNotification}
+          </Alert>
+        )}
+
         {/* Page Header - Updated: Enhanced with MUI styling */}
         <Box sx={{ mb: 4 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -312,29 +393,45 @@ export default function OrderHistoryPage() {
                     <Cake sx={{ color: 'primary.main' }} />
                     <Box>
                       <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                        {order.config.productType === 'cake'
+                        {order.items && order.items.length > 0
+                          ? `${order.items.length} item${order.items.length > 1 ? 's' : ''}`
+                          : order.config.productType === 'cake'
                           ? `${order.config.size}" ${order.config.flavor} Cake`
                           : order.config.productType === 'cookies'
                           ? `Cookies Box of ${order.config.boxSize}`
                           : order.config.productType === 'muffins'
                           ? `Muffins Box of ${order.config.boxSize}`
-                          : ''}
+                          : 'Order'}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'Unknown date'} • Order #{order.id.toString().slice(-6)}
+                        {order.created_at ? new Date(order.created_at).toLocaleString() : 'Unknown date'} • Order #{order.id.toString().slice(-6)}
                       </Typography>
                     </Box>
                   </Box>
                   
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
-                      {new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', currencyDisplay: 'narrowSymbol' }).format(order.config.price)}
+                      {new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', currencyDisplay: 'narrowSymbol' }).format(
+                        order.total_price || order.config?.price || 0
+                      )}
                     </Typography>
                     <Chip
                       label={order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                       color={getStatusColor(order.status) as any}
                       size="small"
                     />
+                    {canEditOrder(order.status) && (
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditOrder(order);
+                        }}
+                        sx={{ color: 'primary.main' }}
+                      >
+                        <Edit fontSize="small" />
+                      </IconButton>
+                    )}
                   </Box>
                 </AccordionSummary>
                 
@@ -345,10 +442,43 @@ export default function OrderHistoryPage() {
                     {/* Product Details */}
                     <Box sx={{ flex: 1 }}>
                       <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
-                        Product Details
+                        {order.items && order.items.length > 0 ? 'Order Items' : 'Product Details'}
                       </Typography>
                       
-                      <Stack spacing={2}>
+                      {/* Display cart items if available */}
+                      {order.items && order.items.length > 0 ? (
+                        <Stack spacing={3}>
+                          {order.items.map((item: any, index: number) => (
+                            <Box key={index} sx={{ p: 2, border: 1, borderColor: 'grey.200', borderRadius: 1 }}>
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 600, textTransform: 'capitalize' }}>
+                                  {item.productType}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                  Qty: {item.quantity} × ₦{item.unitPrice} = ₦{item.quantity * item.unitPrice}
+                                </Typography>
+                              </Box>
+                              
+                              {/* Item customization details */}
+                              <Box sx={{ ml: 2 }}>
+                                {item.productType === 'cake' && (
+                                  <Typography variant="body2" color="text.secondary">
+                                    {item.customization.size}" {item.customization.shape} • {item.customization.layers} layer{item.customization.layers > 1 ? 's' : ''} • {item.customization.flavor}
+                                    {item.customization.text && ` • "${item.customization.text}"`}
+                                  </Typography>
+                                )}
+                                {(item.productType === 'cookies' || item.productType === 'muffins') && (
+                                  <Typography variant="body2" color="text.secondary">
+                                    Box of {item.customization.boxSize} • {item.customization.boxFlavors?.join(', ') || 'No flavors'}
+                                  </Typography>
+                                )}
+                              </Box>
+                            </Box>
+                          ))}
+                        </Stack>
+                      ) : (
+                        /* Legacy single item display */
+                        <Stack spacing={2}>
                         {/* Cake Options */}
                         {order.config.productType === 'cake' && (
                           <>
@@ -423,11 +553,12 @@ export default function OrderHistoryPage() {
                             </Box>
                           </>
                         )}
-                      </Stack>
+                        </Stack>
+                      )}
                     </Box>
                     
                     {/* Delivery Details */}
-                    {order.config.deliveryDetails && order.config.deliveryDetails.name && (
+                    {((order.items && order.shipping_address) || (order.config?.deliveryDetails?.name)) && (
                       <Box sx={{ flex: 1 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                           <LocalShipping sx={{ color: 'primary.main', mr: 1 }} />
@@ -437,40 +568,83 @@ export default function OrderHistoryPage() {
                         </Box>
                         
                         <Stack spacing={2}>
-                          <Box>
-                            <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
-                              Name
-                            </Typography>
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                              {order.config.deliveryDetails.name}
-                            </Typography>
-                          </Box>
-                          <Box>
-                            <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
-                              Address
-                            </Typography>
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                              {order.config.deliveryDetails.address}
-                            </Typography>
-                          </Box>
-                          <Box sx={{ display: 'flex', gap: 4 }}>
-                            <Box>
-                              <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
-                                Phone
-                              </Typography>
-                              <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                {order.config.deliveryDetails.phone}
-                              </Typography>
-                            </Box>
-                            <Box>
-                              <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
-                                State
-                              </Typography>
-                              <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                {order.config.deliveryDetails.state}
-                              </Typography>
-                            </Box>
-                          </Box>
+                          {order.shipping_address ? (
+                            /* New cart-based delivery details */
+                            <>
+                              <Box>
+                                <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
+                                  Name
+                                </Typography>
+                                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                  {order.shipping_address.name}
+                                </Typography>
+                              </Box>
+                              <Box>
+                                <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
+                                  Address
+                                </Typography>
+                                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                  {order.shipping_address.address}
+                                </Typography>
+                              </Box>
+                              <Box sx={{ display: 'flex', gap: 4 }}>
+                                <Box>
+                                  <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
+                                    Phone
+                                  </Typography>
+                                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                    {order.shipping_address.phone}
+                                  </Typography>
+                                </Box>
+                                <Box>
+                                  <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
+                                    State
+                                  </Typography>
+                                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                    {order.shipping_address.state}
+                                  </Typography>
+                                </Box>
+                              </Box>
+                            </>
+                          ) : order.config?.deliveryDetails?.name && (
+                            /* Legacy delivery details */
+                            <>
+                              <Box>
+                                <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
+                                  Name
+                                </Typography>
+                                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                  {order.config.deliveryDetails.name}
+                                </Typography>
+                              </Box>
+                              <Box>
+                                <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
+                                  Address
+                                </Typography>
+                                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                  {order.config.deliveryDetails.address}
+                                </Typography>
+                              </Box>
+                              <Box sx={{ display: 'flex', gap: 4 }}>
+                                <Box>
+                                  <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
+                                    Phone
+                                  </Typography>
+                                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                    {order.config.deliveryDetails.phone}
+                                  </Typography>
+                                </Box>
+                                <Box>
+                                  <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 600 }}>
+                                    State
+                                  </Typography>
+                                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                    {order.config.deliveryDetails.state}
+                                  </Typography>
+                                </Box>
+                              </Box>
+                            </>
+                          )}
                         </Stack>
                       </Box>
                     )}
@@ -481,6 +655,16 @@ export default function OrderHistoryPage() {
           </Stack>
         )}
       </Container>
+
+      {/* Edit Order Modal */}
+      {editingOrder && (
+        <EditOrderModal
+          isOpen={!!editingOrder}
+          onClose={() => setEditingOrder(null)}
+          order={editingOrder}
+          onSuccess={handleEditSuccess}
+        />
+      )}
     </Box>
   );
 } 

@@ -33,7 +33,9 @@ import {
   ArrowBack,
 } from '@mui/icons-material';
 import { useConfig } from '../context/ConfigContext';
-import PriceSummary from '../components/PriceSummary';
+import { useCart } from '../context/CartContext';
+import { createOrderFromCart } from '../utils/orderService';
+import CartSummary from '../components/CartSummary';
 import PaymentForm from '../components/PaymentForm';
 
 // List of Nigerian states
@@ -49,13 +51,14 @@ const steps = ['Customize', 'Delivery Details', 'Payment', 'Confirmation'];
 
 export default function DeliveryDetailsPage() {
   const navigate = useNavigate();
-  const { config, setConfig, user } = useConfig();
+  const { user } = useConfig();
+  const { items, totalPrice, clearCart } = useCart();
   // Local state for form fields
   const [form, setForm] = useState({
-    name: config.deliveryDetails.name || '',
-    address: config.deliveryDetails.address || '',
-    phone: config.deliveryDetails.phone || '',
-    state: config.deliveryDetails.state || '',
+    name: '',
+    address: '',
+    phone: '',
+    state: '',
   });
   const [error, setError] = useState<string | null>(null);
   const [showPayment, setShowPayment] = useState(false);
@@ -84,15 +87,30 @@ export default function DeliveryDetailsPage() {
   // Handle "Proceed to Payment" button
   const handleProceed = () => {
     if (!validate()) return;
-    setConfig({ ...config, deliveryDetails: { ...form } });
+    // Store delivery details in localStorage for now (will be part of order creation)
+    localStorage.setItem('deliveryDetails', JSON.stringify(form));
     setShowPayment(true);
   };
 
   // Handle payment success
-  const handlePaymentSuccess = () => {
-    setShowPayment(false);
-    setPaymentError(null);
-    navigate('/confirmation');
+  const handlePaymentSuccess = async () => {
+    try {
+      // Get delivery details from localStorage
+      const deliveryDetails = JSON.parse(localStorage.getItem('deliveryDetails') || '{}');
+      
+      // Create order with all cart items
+      await createOrderFromCart(user!, items, deliveryDetails);
+      
+      // Clear cart and navigate
+      await clearCart();
+      localStorage.removeItem('deliveryDetails');
+      setShowPayment(false);
+      setPaymentError(null);
+      navigate('/confirmation');
+    } catch (error) {
+      console.error('Error creating order:', error);
+      setPaymentError('Failed to create order. Please try again.');
+    }
   };
 
   // Handle payment error
@@ -100,9 +118,14 @@ export default function DeliveryDetailsPage() {
     setPaymentError(error.message || 'Payment failed. Please try again.');
   };
 
-  // If not logged in, redirect to home
+  // If not logged in or no items in cart, redirect
   if (!user) {
     navigate('/');
+    return null;
+  }
+
+  if (items.length === 0) {
+    navigate('/cart');
     return null;
   }
 
@@ -113,10 +136,10 @@ export default function DeliveryDetailsPage() {
         <Box sx={{ mb: 4 }}>
           <Button
             startIcon={<ArrowBack />}
-            onClick={() => navigate('/customize')}
+            onClick={() => navigate('/cart')}
             sx={{ mb: 3, textTransform: 'none' }}
           >
-            Back to Customizer
+            Back to Cart
           </Button>
           
           <Typography variant="h4" component="h1" sx={{ fontWeight: 700, mb: 3 }}>
@@ -280,7 +303,7 @@ export default function DeliveryDetailsPage() {
 
           {/* Order Summary and Payment - Updated: Enhanced sidebar */}
           <Box sx={{ flex: 1, minWidth: 300 }}>
-            {/* Price Summary - Updated: Enhanced wrapper */}
+            {/* Cart Summary - Updated: Enhanced wrapper */}
             <Paper
               elevation={2}
               sx={{
@@ -289,7 +312,7 @@ export default function DeliveryDetailsPage() {
                 overflow: 'hidden',
               }}
             >
-              <PriceSummary />
+              <CartSummary />
             </Paper>
 
             {/* Payment Section - Updated: Enhanced payment UI */}
@@ -311,7 +334,7 @@ export default function DeliveryDetailsPage() {
                 <Divider sx={{ mb: 3 }} />
 
                 <PaymentForm
-                  amount={config.price}
+                  amount={totalPrice}
                   userEmail={user.email || ''}
                   onSuccess={handlePaymentSuccess}
                   onError={handlePaymentError}

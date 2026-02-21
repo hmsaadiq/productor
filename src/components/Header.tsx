@@ -31,8 +31,10 @@ import {
 } from '@mui/icons-material';
 // Import useConfig hook to access global user state and updater from context.
 import { useConfig } from '../context/ConfigContext';
+// Import useCart hook to access cart state
+import { useCart } from '../context/CartContext';
 // Import signOut utility to handle user sign-out from Supabase Auth.
-import { signOut } from '../utils/supabase';
+import { signOut, supabase } from '../utils/supabase';
 
 // Define the props for the Header component.
 interface HeaderProps {
@@ -43,9 +45,29 @@ interface HeaderProps {
 export default function Header({ onSignInClick }: HeaderProps) {
   // Get user state and updater from context.
   const { user, setUser } = useConfig();
+  // Get cart state from context
+  const { totalItems } = useCart();
   // Updated: Added location hook for active navigation highlighting and menu state
   const location = useLocation();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [isAdmin, setIsAdmin] = React.useState(false);
+
+  // Check if user is admin
+  React.useEffect(() => {
+    const checkAdmin = async () => {
+      if (user) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', user.id)
+          .single();
+        setIsAdmin(data?.is_admin || false);
+      } else {
+        setIsAdmin(false);
+      }
+    };
+    checkAdmin();
+  }, [user]);
 
   // Handle user sign-out by calling Supabase signOut and updating context.
   const handleSignOut = async () => {
@@ -101,30 +123,34 @@ export default function Header({ onSignInClick }: HeaderProps) {
 
           {/* Desktop Navigation - Updated: Kept original navigation structure with MUI styling */}
           <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 4 }}>
-            <Button
-              component={Link}
-              to="/"
-              color={location.pathname === '/' ? 'primary' : 'inherit'}
-              sx={{ fontWeight: 500 }}
-            >
-              Home
-            </Button>
-            <Button
-              component={Link}
-              to="/customize"
-              color={location.pathname === '/customize' ? 'primary' : 'inherit'}
-              sx={{ fontWeight: 500 }}
-            >
-              Customize Cake
-            </Button>
+            {!isAdmin && (
+              <>
+                <Button
+                  component={Link}
+                  to="/"
+                  color={location.pathname === '/' ? 'primary' : 'inherit'}
+                  sx={{ fontWeight: 500 }}
+                >
+                  Home
+                </Button>
+                <Button
+                  component={Link}
+                  to="/customize"
+                  color={location.pathname === '/customize' ? 'primary' : 'inherit'}
+                  sx={{ fontWeight: 500 }}
+                >
+                  Customize Cake
+                </Button>
+              </>
+            )}
             {user && (
               <Button
                 component={Link}
-                to="/history"
-                color={location.pathname === '/history' ? 'primary' : 'inherit'}
+                to={isAdmin ? "/admin" : "/history"}
+                color={location.pathname === (isAdmin ? '/admin' : '/history') ? 'primary' : 'inherit'}
                 sx={{ fontWeight: 500 }}
               >
-                Order History
+                {isAdmin ? 'Admin Dashboard' : 'Order History'}
               </Button>
             )}
           </Box>
@@ -132,17 +158,21 @@ export default function Header({ onSignInClick }: HeaderProps) {
           {/* Actions Section - Updated: Enhanced with shopping cart and improved user menu */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {/* Shopping Cart - New: Added shopping cart with badge for better UX */}
-            <IconButton
-              size="large"
-              sx={{ 
-                backgroundColor: 'grey.50',
-                '&:hover': { backgroundColor: 'primary.main', color: 'white' }
-              }}
-            >
-              <Badge badgeContent={0} color="primary">
-                <ShoppingBag />
-              </Badge>
-            </IconButton>
+            {!isAdmin && (
+              <IconButton
+                component={Link}
+                to="/cart"
+                size="large"
+                sx={{ 
+                  backgroundColor: 'grey.50',
+                  '&:hover': { backgroundColor: 'primary.main', color: 'white' }
+                }}
+              >
+                <Badge badgeContent={totalItems} color="primary">
+                  <ShoppingBag />
+                </Badge>
+              </IconButton>
+            )}
 
             {/* User Authentication - Updated: Enhanced with avatar and dropdown menu */}
             {user ? (
@@ -166,9 +196,15 @@ export default function Header({ onSignInClick }: HeaderProps) {
                   transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                   anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                 >
-                  <MenuItem onClick={handleMenuClose} component={Link} to="/history">
-                    Order History
-                  </MenuItem>
+                  {isAdmin ? (
+                    <MenuItem onClick={handleMenuClose} component={Link} to="/admin">
+                      Admin Dashboard
+                    </MenuItem>
+                  ) : (
+                    <MenuItem onClick={handleMenuClose} component={Link} to="/history">
+                      Order History
+                    </MenuItem>
+                  )}
                   <MenuItem onClick={handleSignOut}>
                     Sign Out
                   </MenuItem>

@@ -76,12 +76,32 @@ export const subscribeToAuthChanges = (callback: (user: User | null) => void) =>
   
   // Get initial session
   supabase.auth.getSession().then(({ data: { session } }) => {
+    if (session?.user) {
+      // Create or update profile
+      supabase.from('profiles').upsert({
+        id: session.user.id,
+        email: session.user.email,
+        full_name: session.user.user_metadata?.full_name || session.user.user_metadata?.name,
+        updated_at: new Date().toISOString()
+      }).then();
+    }
     callback(session?.user ?? null);
   });
 
   // Listen for auth changes
   const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
     console.log('Auth state changed:', session?.user ? `User ${session.user.email} is signed in` : 'No user signed in');
+    
+    if (session?.user) {
+      // Create or update profile
+      supabase.from('profiles').upsert({
+        id: session.user.id,
+        email: session.user.email,
+        full_name: session.user.user_metadata?.full_name || session.user.user_metadata?.name,
+        updated_at: new Date().toISOString()
+      }).then();
+    }
+    
     callback(session?.user ?? null);
   });
 
