@@ -52,17 +52,10 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
       setError(null); // Clear previous errors.
       setIsLoading(true); // Show loading indicator.
       const user = await signInWithGoogle(); // Sign in with Google via Supabase Auth.
-      
-      // Add delay to allow OAuth redirect to complete
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
       setUser(user); // Update user state in context.
       onClose(); // Close the modal on success.
     } catch (error) {
       console.error('Error signing in with Google:', error); // Log error.
-      
-      // Wait before showing error (OAuth redirect might be in progress)
-      await new Promise(resolve => setTimeout(resolve, 500));
       setError('Failed to sign in with Google. Please try again.'); // Show error message.
     } finally {
       setIsLoading(false); // Hide loading indicator.

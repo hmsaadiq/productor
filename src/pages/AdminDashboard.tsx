@@ -18,16 +18,26 @@ import {
 } from '@mui/material';
 import { supabase } from '../utils/supabase';
 import { useConfig } from '../context/ConfigContext';
+import { CancelOrderButton } from '../components/CancelOrderButton';
+import { Order as OrderType } from '../types/order';
+import { AdminOrderStatusControls } from '../components/AdminOrderStatusControls';
+import { OrderStatus } from '../utils/orderStatusHelpers';
 
 interface Order {
   id: number;
   user_id: string;
   items: any;
-  status: string;
+  status: 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'out_for_delivery' | 'delivered';
   total_price: number;
   shipping_address: any;
   created_at: string;
   config: any;
+  updated_at?: string;
+  cancelled_at?: string;
+  cancelled_by?: string;
+  cancelled_by_role?: 'user' | 'admin';
+  cancellation_reason?: string;
+  previous_status?: string;
 }
 
 export default function AdminDashboard() {
@@ -113,7 +123,7 @@ export default function AdminDashboard() {
       console.error('Error updating order:', error);
     } else {
       setOrders(orders.map(order => 
-        order.id === orderId ? { ...order, status: newStatus } : order
+        order.id === orderId ? { ...order, status: newStatus as Order['status'] } : order
       ));
     }
   };
@@ -188,17 +198,25 @@ export default function AdminDashboard() {
                   </TableCell>
                   <TableCell>₦{(order.total_price || order.config?.price || 0).toLocaleString()}</TableCell>
                   <TableCell>
-                    <Select
-                      value={order.status}
-                      onChange={(e) => updateOrderStatus(order.id, e.target.value)}
-                      size="small"
-                    >
-                      <MenuItem value="pending">Pending</MenuItem>
-                      <MenuItem value="confirmed">Confirmed</MenuItem>
-                      <MenuItem value="in_progress">In Progress</MenuItem>
-                      <MenuItem value="completed">Completed</MenuItem>
-                      <MenuItem value="cancelled">Cancelled</MenuItem>
-                    </Select>
+                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexDirection: 'column' }}>
+                      <AdminOrderStatusControls
+                        currentStatus={order.status as OrderStatus}
+                        onStatusChange={async (newStatus: OrderStatus) => {
+                          await updateOrderStatus(order.id, newStatus);
+                        }}
+                      />
+                      <CancelOrderButton
+                        order={{
+                          id: String(order.id),
+                          userId: order.user_id,
+                          createdAt: order.created_at,
+                          status: order.status,
+                          config: order.config,
+                        } as OrderType}
+                        isAdmin={true}
+                        onSuccess={loadOrders}
+                      />
+                    </Box>
                   </TableCell>
                   <TableCell>
                     {new Date(order.created_at).toLocaleDateString()}
@@ -215,6 +233,31 @@ export default function AdminDashboard() {
                 {expandedOrder === order.id && (
                   <TableRow>
                     <TableCell colSpan={9} sx={{ bgcolor: 'grey.50', p: 3 }}>
+                      {/* Cancellation Info */}
+                      {order.status === 'cancelled' && order.cancelled_at && (
+                        <Box sx={{ mb: 3, p: 2, border: 2, borderColor: 'error.main', bgcolor: 'background.paper', borderRadius: 1 }}>
+                          <Typography variant="subtitle2" fontWeight="bold" color="error.dark" gutterBottom>
+                            Order Cancelled
+                          </Typography>
+                          <Typography variant="body2">
+                            <strong>Cancelled:</strong> {new Date(order.cancelled_at).toLocaleString()}
+                          </Typography>
+                          <Typography variant="body2">
+                            <strong>By:</strong> {order.cancelled_by_role === 'admin' ? 'Admin' : 'Customer'}
+                          </Typography>
+                          {order.cancellation_reason && (
+                            <Typography variant="body2">
+                              <strong>Reason:</strong> {order.cancellation_reason}
+                            </Typography>
+                          )}
+                          {order.previous_status && (
+                            <Typography variant="body2">
+                              <strong>Previous Status:</strong> {order.previous_status}
+                            </Typography>
+                          )}
+                        </Box>
+                      )}
+
                       <Box sx={{ display: 'flex', gap: 4, flexDirection: { xs: 'column', md: 'row' } }}>
                         {/* Order Items */}
                         <Box sx={{ flex: 1 }}>

@@ -53,6 +53,8 @@ import { Order } from '../types/order';
 // Import supabase for real-time subscriptions
 import { supabase } from '../utils/supabase';
 import EditOrderModal from '../components/EditOrderModal';
+import { CancelOrderButton } from '../components/CancelOrderButton';
+import { formatStatus, getStatusColor } from '../utils/orderStatusHelpers';
 
 // OrderHistoryPage component displays the user's order history - Updated: Enhanced with MUI design.
 export default function OrderHistoryPage() {
@@ -149,16 +151,6 @@ export default function OrderHistoryPage() {
       }
       return sum;
     }, 0),
-  };
-
-  // Get status color
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed': return 'success';
-      case 'confirmed': return 'info';
-      case 'pending': return 'warning';
-      default: return 'default';
-    }
   };
 
   // Check if order can be edited
@@ -416,27 +408,59 @@ export default function OrderHistoryPage() {
                       )}
                     </Typography>
                     <Chip
-                      label={order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                      color={getStatusColor(order.status) as any}
+                      label={formatStatus(order.status)}
+                      color={getStatusColor(order.status)}
                       size="small"
                     />
-                    {canEditOrder(order.status) && (
-                      <IconButton
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEditOrder(order);
-                        }}
-                        sx={{ color: 'primary.main' }}
-                      >
-                        <Edit fontSize="small" />
-                      </IconButton>
-                    )}
                   </Box>
                 </AccordionSummary>
                 
                 <AccordionDetails sx={{ p: 3, pt: 0 }}>
                   <Divider sx={{ mb: 3 }} />
+                  
+                  {/* Cancellation Info */}
+                  {order.status === 'cancelled' && order.cancelled_at && (
+                    <Box sx={{ mb: 3, p: 2, border: 2, borderColor: 'error.main', bgcolor: 'background.paper', borderRadius: 1 }}>
+                      <Typography variant="subtitle2" fontWeight="bold" color="error.dark" gutterBottom>
+                        Order Cancelled
+                      </Typography>
+                      <Typography variant="body2">
+                        <strong>Cancelled:</strong> {new Date(order.cancelled_at).toLocaleString()}
+                      </Typography>
+                      <Typography variant="body2">
+                        <strong>By:</strong> {order.cancelled_by_role === 'admin' ? 'Admin' : 'Customer'}
+                      </Typography>
+                      {order.cancellation_reason && (
+                        <Typography variant="body2">
+                          <strong>Reason:</strong> {order.cancellation_reason}
+                        </Typography>
+                      )}
+                      {order.previous_status && (
+                        <Typography variant="body2">
+                          <strong>Previous Status:</strong> {order.previous_status}
+                        </Typography>
+                      )}
+                    </Box>
+                  )}
+                  
+                  {/* Action Buttons */}
+                  <Box sx={{ mb: 3, display: 'flex', gap: 2 }}>
+                    <CancelOrderButton
+                      order={order}
+                      isAdmin={false}
+                      onSuccess={handleEditSuccess}
+                    />
+                    {canEditOrder(order.status) && (
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        startIcon={<Edit />}
+                        onClick={() => handleEditOrder(order)}
+                      >
+                        Edit Order
+                      </Button>
+                    )}
+                  </Box>
                   
                   <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
                     {/* Product Details */}

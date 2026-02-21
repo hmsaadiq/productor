@@ -7,8 +7,8 @@
 
 // Expanded config to support multiple product types and delivery details.
 export interface Order {
-  id: string; // Unique order ID (Supabase UUID).
-  userId: string; // User ID of the person who placed the order.
+  id: string; // String for compatibility with CancelOrderButton
+  userId: string;
   config: {
     productType: 'cake' | 'cookies' | 'muffins'; // Product type selected by user.
     // Cake-specific fields
@@ -31,12 +31,17 @@ export interface Order {
       state: string;
     };
   };
-  status: 'pending' | 'confirmed' | 'completed'; // Order status.
-  createdAt: string; // ISO timestamp when order was created (Supabase uses timestamptz).
-  created_at?: string; // Database field name
-  // New cart-based fields
-  items?: any[]; // Cart items array
-  total_price?: number; // Total price for cart orders
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'in_progress' | 'out_for_delivery' | 'delivered';
+  createdAt: string;
+  created_at?: string;
+  updated_at?: string;
+  cancelled_at?: string;
+  cancelled_by?: string;
+  cancelled_by_role?: 'user' | 'admin';
+  cancellation_reason?: string;
+  previous_status?: string;
+  items?: any[];
+  total_price?: number;
   shipping_address?: {
     name: string;
     address: string;
