@@ -11,7 +11,7 @@ import {
   Divider,
   Stack,
   Chip,
-  Alert,
+  Skeleton,
 } from '@mui/material';
 import {
   Delete,
@@ -21,19 +21,28 @@ import {
   ArrowBack,
 } from '@mui/icons-material';
 import { useCart } from '../context/CartContext';
-import { useConfig } from '../context/ConfigContext';
 
 export default function CartPage() {
-  const { items, removeFromCart, updateQuantity, totalPrice, totalItems } = useCart();
-  const { user } = useConfig();
+  const { items, loading, removeFromCart, updateQuantity, totalPrice, totalItems } = useCart();
   const navigate = useNavigate();
 
-  if (!user) {
+  if (loading) {
     return (
-      <Container maxWidth="md" sx={{ py: 8 }}>
-        <Alert severity="info">
-          Please sign in to view your cart.
-        </Alert>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Skeleton variant="text" width={200} height={56} sx={{ mb: 1 }} />
+        <Skeleton variant="text" width={140} height={28} sx={{ mb: 4 }} />
+        <Box sx={{ display: 'flex', gap: 4, flexDirection: { xs: 'column', md: 'row' } }}>
+          <Box sx={{ flex: 2 }}>
+            <Stack spacing={2}>
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} variant="rounded" height={120} />
+              ))}
+            </Stack>
+          </Box>
+          <Box sx={{ width: { xs: '100%', md: 400 } }}>
+            <Skeleton variant="rounded" height={260} />
+          </Box>
+        </Box>
       </Container>
     );
   }
@@ -105,14 +114,13 @@ export default function CartPage() {
                         {item.productType?.charAt(0).toUpperCase() + item.productType?.slice(1) || 'Product'}
                       </Typography>
                       
-                      <Box sx={{ mb: 2 }}>
+                      <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                         {formatCustomization(item.customization).map((detail, index) => (
                           <Chip
                             key={index}
                             label={detail}
                             size="small"
                             variant="outlined"
-                            sx={{ mr: 1, mb: 1 }}
                           />
                         ))}
                       </Box>
@@ -121,6 +129,7 @@ export default function CartPage() {
                         <Box sx={{ display: 'flex', alignItems: 'center', border: 1, borderColor: 'grey.300', borderRadius: 1 }}>
                           <IconButton
                             size="small"
+                            sx={{ minWidth: 40, minHeight: 40 }}
                             onClick={() => updateQuantity(item.id!, Math.max(1, item.quantity - 1))}
                           >
                             <Remove />
@@ -130,6 +139,7 @@ export default function CartPage() {
                           </Typography>
                           <IconButton
                             size="small"
+                            sx={{ minWidth: 40, minHeight: 40 }}
                             onClick={() => updateQuantity(item.id!, item.quantity + 1)}
                           >
                             <Add />
@@ -161,7 +171,7 @@ export default function CartPage() {
         </Box>
 
         {/* Order Summary */}
-        <Box sx={{ flex: 1, maxWidth: { md: 400 } }}>
+        <Box sx={{ width: { xs: '100%', md: 400 } }}>
           <Card elevation={2} sx={{ position: 'sticky', top: 20 }}>
             <CardContent sx={{ p: 3 }}>
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>

@@ -185,8 +185,8 @@ export default function CakeCustomizer() {
 
   // Render the customization UI - Updated: Enhanced with MUI Stepper and improved layout.
   return (
-    <Box sx={{ maxWidth: 800, mx: 'auto', p: 3 }}>
-      <Paper elevation={2} sx={{ p: 4, borderRadius: 3 }}>
+    <Box sx={{ maxWidth: 800, mx: 'auto', p: { xs: 2, md: 3 } }}>
+      <Paper elevation={2} sx={{ p: { xs: 2, md: 4 }, borderRadius: 3 }}>
         {/* Header Section - New: Added visual header with icon */}
         <Box sx={{ textAlign: 'center', mb: 4 }}>
           <Cake sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
@@ -213,6 +213,7 @@ export default function CakeCustomizer() {
                     <ToggleButtonGroup
                       value={config.productType}
                       exclusive
+                      fullWidth
                       onChange={(_, value) => value && handleProductTypeChange(value)}
                       sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}
                     >
@@ -222,12 +223,13 @@ export default function CakeCustomizer() {
                           value={type}
                           sx={{
                             flex: 1,
-                            minWidth: 120,
-                            py: 2,
+                            minWidth: 0,
+                            py: { xs: 1.2, md: 1.5 },
+                            fontSize: { xs: '0.85rem', md: '1rem' },
                             borderRadius: 2,
                             '&.Mui-selected': {
                               backgroundColor: 'primary.main',
-                              color: 'white',
+                              color: 'primary.contrastText',
                               '&:hover': {
                                 backgroundColor: 'primary.dark',
                               }
@@ -272,7 +274,7 @@ export default function CakeCustomizer() {
                               borderRadius: 2,
                               '&.Mui-selected': {
                                 backgroundColor: 'primary.main',
-                                color: 'white'
+                                color: 'primary.contrastText'
                               }
                             }}
                           >
@@ -347,7 +349,7 @@ export default function CakeCustomizer() {
                             fullWidth
                             variant={config.flavor === flavor ? 'contained' : 'outlined'}
                             onClick={() => handleFlavorChange(flavor)}
-                            sx={{ py: 1.5, borderRadius: 2, flex: '1 1 45%' }}
+                            sx={{ py: { xs: 1, md: 1.5 }, borderRadius: 2, flex: '1 1 45%', fontSize: { xs: '0.8rem', md: '0.95rem' } }}
                           >
                             {flavor.charAt(0).toUpperCase() + flavor.slice(1)}
                           </Button>
@@ -423,7 +425,7 @@ export default function CakeCustomizer() {
                             borderRadius: 2,
                             '&.Mui-selected': {
                               backgroundColor: 'primary.main',
-                              color: 'white'
+                              color: 'primary.contrastText'
                             }
                           }}
                         >
@@ -447,7 +449,7 @@ export default function CakeCustomizer() {
                           variant={config.boxFlavors?.includes(flavor) ? 'contained' : 'outlined'}
                           onClick={() => handleBoxFlavorChange(flavor)}
                           disabled={config.boxFlavors && config.boxFlavors.length >= 2 && !config.boxFlavors.includes(flavor)}
-                          sx={{ py: 1.5, borderRadius: 2, flex: '1 1 45%' }}
+                          sx={{ py: { xs: 1, md: 1.5 }, borderRadius: 2, flex: '1 1 45%', fontSize: { xs: '0.8rem', md: '0.95rem' } }}
                         >
                           {flavor.charAt(0).toUpperCase() + flavor.slice(1)}
                         </Button>

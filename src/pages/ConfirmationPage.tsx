@@ -8,7 +8,7 @@
 // Import React, useEffect, useState, and useRef for component logic, side effects, state management, and refs.
 import React, { useEffect, useState, useRef } from 'react';
 // Import useNavigate from React Router for programmatic navigation.
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 // Import MUI components for enhanced confirmation page UI
 import {
   Box,
@@ -50,10 +50,9 @@ const steps = ['Customize', 'Delivery Details', 'Payment', 'Confirmation'];
 export default function ConfirmationPage() {
   // Get navigate function for routing.
   const navigate = useNavigate();
-  // Get config, user, and resetConfig from context.
+  const location = useLocation();
   const { user, resetConfig } = useConfig();
-  // Local state for QR code modal visibility.
-  const [isQRModalOpen, setIsQRModalOpen] = useState(false);
+  const orderId = (location.state as any)?.orderId;
 
   // Redirect if not logged in
   useEffect(() => {
@@ -99,6 +98,13 @@ export default function ConfirmationPage() {
           <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
             Thank you for your order
           </Typography>
+          {orderId && (
+            <Chip
+              label={`Order #${orderId}`}
+              color="success"
+              sx={{ fontSize: '1.1rem', px: 2, py: 1, mb: 1, fontWeight: 600 }}
+            />
+          )}
           <Chip
             label="Order Completed Successfully"
             color="primary"
@@ -123,7 +129,7 @@ export default function ConfirmationPage() {
                         alignItems: 'center',
                         justifyContent: 'center',
                         bgcolor: 'success.main',
-                        color: 'white',
+                        color: 'success.contrastText',
                         fontSize: '0.875rem',
                         fontWeight: 600,
                       }}

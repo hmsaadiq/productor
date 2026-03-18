@@ -12,6 +12,7 @@ export interface CartItem {
 
 interface CartContextType {
   items: CartItem[];
+  loading: boolean;
   addToCart: (item: Omit<CartItem, 'id'>) => Promise<void>;
   removeFromCart: (id: string) => Promise<void>;
   updateQuantity: (id: string, quantity: number) => Promise<void>;
@@ -24,6 +25,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const { user } = useConfig();
 
   // Load cart from Supabase when user logs in
@@ -31,23 +33,26 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (user) {
       loadCart();
     } else {
-      setItems([]);
+      setLoading(false);
     }
+    // Guest items are kept in local state — no clearing on mount
   }, [user]);
 
   const loadCart = async () => {
     if (!user) return;
-    
+    setLoading(true);
+
     const { data, error } = await supabase
       .from('cart_items')
       .select('*')
       .eq('user_id', user.id);
-    
+
     if (error) {
       console.error('Error loading cart:', error);
+      setLoading(false);
       return;
     }
-    
+
     // Map database fields to interface properties
     const mappedItems = (data || []).map(item => ({
       id: item.id,
@@ -56,13 +61,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
       quantity: item.quantity,
       unitPrice: item.unit_price,
     }));
-    
+
     setItems(mappedItems);
+    setLoading(false);
   };
 
   const addToCart = async (item: Omit<CartItem, 'id'>) => {
-    if (!user) return;
-    
+    if (!user) {
+      // Guest: add to local state only with a temporary ID
+      const guestItem: CartItem = {
+        id: `guest-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        ...item,
+      };
+      setItems(prev => [...prev, guestItem]);
+      return;
+    }
+
     const { data, error } = await supabase
       .from('cart_items')
       .insert({
@@ -74,12 +88,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
       })
       .select()
       .single();
-    
+
     if (error) {
       console.error('Error adding to cart:', error);
       return;
     }
-    
+
     // Map database response to interface properties
     const mappedItem = {
       id: data.id,
@@ -88,61 +102,75 @@ export function CartProvider({ children }: { children: ReactNode }) {
       quantity: data.quantity,
       unitPrice: data.unit_price,
     };
-    
+
     setItems(prev => [...prev, mappedItem]);
   };
 
   const removeFromCart = async (id: string) => {
-    if (!user) return;
-    
+    if (!user) {
+      // Guest: remove from local state only
+      setItems(prev => prev.filter(item => item.id !== id));
+      return;
+    }
+
     const { error } = await supabase
       .from('cart_items')
       .delete()
       .eq('id', id)
       .eq('user_id', user.id);
-    
+
     if (error) {
       console.error('Error removing from cart:', error);
       return;
     }
-    
+
     setItems(prev => prev.filter(item => item.id !== id));
   };
 
   const updateQuantity = async (id: string, quantity: number) => {
-    if (!user || quantity < 1) return;
-    
+    if (quantity < 1) return;
+
+    if (!user) {
+      // Guest: update local state only
+      setItems(prev => prev.map(item => item.id === id ? { ...item, quantity } : item));
+      return;
+    }
+
     const { error } = await supabase
       .from('cart_items')
       .update({ quantity })
       .eq('id', id)
       .eq('user_id', user.id);
-    
+
     if (error) {
       console.error('Error updating quantity:', error);
       return;
     }
-    
-    setItems(prev => 
-      prev.map(item => 
+
+    setItems(prev =>
+      prev.map(item =>
         item.id === id ? { ...item, quantity } : item
       )
     );
   };
 
   const clearCart = async () => {
-    if (!user) return;
-    
+    if (!user) {
+      // Guest: clear local state only
+      setItems([]);
+      return;
+    }
+
     const { error } = await supabase
       .from('cart_items')
       .delete()
       .eq('user_id', user.id);
-    
+
     if (error) {
       console.error('Error clearing cart:', error);
       return;
     }
-    
+
     setItems([]);
   };
 
@@ -152,6 +180,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   return (
     <CartContext.Provider value={{
       items,
+      loading,
       addToCart,
       removeFromCart,
       updateQuantity,

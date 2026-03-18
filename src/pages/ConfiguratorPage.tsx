@@ -65,13 +65,8 @@ export default function ConfiguratorPage() {
     return false;
   })();
 
-  // Handle "Add to Cart" button click - NEW FLOW: Add to cart instead of direct checkout
+  // Handle "Add to Cart" button click - supports both authenticated and guest users
   const handleAddToCart = async () => {
-    if (!user) {
-      setIsLoginModalOpen(true);
-      return;
-    }
-    
     setAddingToCart(true);
     try {
       await addToCart({
@@ -110,7 +105,7 @@ export default function ConfiguratorPage() {
         <Box
           sx={{
             display: 'flex',
-            flexDirection: { xs: 'column', lg: 'row' },
+            flexDirection: { xs: 'column', md: 'row' },
             gap: 4,
             alignItems: 'flex-start',
           }}
@@ -129,7 +124,7 @@ export default function ConfiguratorPage() {
           </Box>
 
           {/* Right Column - Summary and Actions - Updated: Enhanced sticky sidebar */}
-          <Box sx={{ flex: 1, minWidth: 300 }}>
+          <Box sx={{ flex: 1, minWidth: { xs: '100%', md: 300 }, width: { xs: '100%', md: 'auto' } }}>
             <Box
               sx={{
                 position: { lg: 'sticky' },
@@ -214,7 +209,7 @@ export default function ConfiguratorPage() {
                     }}
                     fullWidth
                   >
-                    {addingToCart ? 'Adding to Cart...' : user ? 'Add to Cart' : 'Login to Add to Cart'}
+                    {addingToCart ? 'Adding to Cart...' : 'Add to Cart'}
                   </Button>
 
                   {/* Help Text - New: Added helpful guidance */}
