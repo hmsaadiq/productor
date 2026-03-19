@@ -208,7 +208,7 @@ export default function PaymentForm({ amount, userEmail, onSuccess, onError }: P
           </Typography>
           <Typography variant="body2" color="text.secondary">
             {config.productType === 'cake' 
-              ? `${config.size}" ${config.shape} ${config.flavor} cake with ${config.layers} layer${config.layers !== 1 ? 's' : ''}`
+              ? `${config.size}" ${config.shape} cake with ${config.layers} layer${config.layers !== 1 ? 's' : ''}${(config.flavors || []).length ? ' • ' + config.flavors!.join(', ') : ''}`
               : `Box of ${config.boxSize} ${config.productType} - ${config.boxFlavors?.join(', ') || 'No flavors selected'}`
             }
           </Typography>

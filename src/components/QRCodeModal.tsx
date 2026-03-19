@@ -6,7 +6,7 @@
 // Security: No direct security features; only displays or encodes configuration data.
 
 // Import React for component creation.
-import React from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 // Import MUI components for enhanced QR modal UI
 import {
   Dialog,
@@ -34,6 +34,12 @@ import {
 import { QRCodeSVG } from 'qrcode.react';
 // Import useConfig hook to access current cake configuration from context.
 import { useConfig } from '../context/ConfigContext';
+// Import useNavigate for redirecting after successful scan.
+import { useNavigate } from 'react-router-dom';
+// Import Html5Qrcode for camera-based QR scanning.
+import { Html5Qrcode } from 'html5-qrcode';
+// Import CheckCircle icon for success state.
+import CheckCircle from '@mui/icons-material/CheckCircle';
 
 // Define the props for the QRCodeModal component.
 interface QRCodeModalProps {
@@ -44,8 +50,87 @@ interface QRCodeModalProps {
 
 // QRCodeModal component displays a modal for showing or scanning a QR code - Updated: Enhanced with MUI styling and better UX.
 export default function QRCodeModal({ isOpen, onClose, mode }: QRCodeModalProps) {
-  // Get current cake configuration from context.
-  const { config } = useConfig();
+  // Get current cake configuration and setter from context.
+  const { config, setConfig } = useConfig();
+  const navigate = useNavigate();
+
+  // Scanner state.
+  const [scanning, setScanning] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
+  const [scannedConfig, setScannedConfig] = useState<any>(null);
+  const scannerRef = useRef<Html5Qrcode | null>(null);
+
+  // Stop and clear scanner helper.
+  const stopScanner = async () => {
+    if (scannerRef.current) {
+      try {
+        await scannerRef.current.stop();
+        scannerRef.current.clear();
+      } catch (_) {
+        // Ignore errors on stop (e.g. scanner already stopped).
+      }
+      scannerRef.current = null;
+    }
+    setScanning(false);
+  };
+
+  // Cleanup scanner when modal closes or component unmounts.
+  useEffect(() => {
+    if (!isOpen) {
+      stopScanner();
+      setScanError(null);
+      setScannedConfig(null);
+    }
+    return () => { stopScanner(); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
+
+  // Start the html5-qrcode scanner.
+  const handleStartScan = async () => {
+    setScanError(null);
+    setScannedConfig(null);
+    setScanning(true);
+
+    // Wait one tick so the #qr-reader div is mounted.
+    await new Promise(r => setTimeout(r, 50));
+
+    try {
+      const scanner = new Html5Qrcode('qr-reader');
+      scannerRef.current = scanner;
+
+      await scanner.start(
+        { facingMode: 'environment' },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        (decodedText) => {
+          // Success callback.
+          try {
+            const parsed = JSON.parse(decodedText);
+            if (!parsed.productType) throw new Error('Not a valid Productor QR code.');
+            const { timestamp, ...cakeConfig } = parsed;
+            setScannedConfig(cakeConfig);
+            stopScanner();
+          } catch (e: any) {
+            setScanError(e.message || 'Invalid QR code data.');
+            stopScanner();
+          }
+        },
+        () => { /* ignore per-frame decode failures */ },
+      );
+    } catch (e: any) {
+      setScanError(e.message || 'Could not access camera.');
+      setScanning(false);
+      scannerRef.current = null;
+    }
+  };
+
+  // Load the scanned config and navigate to /customize.
+  const handleLoadConfig = () => {
+    if (scannedConfig) {
+      setConfig(scannedConfig);
+      onClose();
+      navigate('/customize');
+    }
+  };
 
   // Prepare QR data by combining config with a timestamp.
   const qrData = {
@@ -67,7 +152,7 @@ export default function QRCodeModal({ isOpen, onClose, mode }: QRCodeModalProps)
         ctx?.drawImage(img, 0, 0);
         const pngFile = canvas.toDataURL('image/png');
         const downloadLink = document.createElement('a');
-        downloadLink.download = 'productor1-cake-config.png';
+        downloadLink.download = 'frosted-crusts-cake-config.png';
         downloadLink.href = pngFile;
         downloadLink.click();
       };
@@ -91,7 +176,7 @@ export default function QRCodeModal({ isOpen, onClose, mode }: QRCodeModalProps)
       try {
         await navigator.share({
           title: 'My Cake Configuration',
-          text: 'Check out my custom cake design from Productor1!',
+          text: 'Check out my custom cake design from Frosted Crusts!',
           url: window.location.href,
         });
       } catch (err) {
@@ -203,8 +288,16 @@ export default function QRCodeModal({ isOpen, onClose, mode }: QRCodeModalProps)
                 Configuration Summary:
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {config.productType === 'cake' 
-                  ? `${config.size}" ${config.shape} ${config.flavor} cake`
+                {config.productType === 'cake'
+                  ? (
+                    <>
+                      <span>{config.size}" {config.shape} cake</span>
+                      {(config.flavors || []).map((f, i) => (
+                        <span key={i}> • Layer {i + 1}: {f}</span>
+                      ))}
+                      {config.filling && <span> • Filling: {config.filling}</span>}
+                    </>
+                  )
                   : `Box of ${config.boxSize} ${config.productType}`
                 }
                 {config.text && ` • "${config.text}"`}
@@ -212,35 +305,73 @@ export default function QRCodeModal({ isOpen, onClose, mode }: QRCodeModalProps)
             </Box>
           </Box>
         ) : (
-          /* Scanner Mode - Updated: Enhanced scanner placeholder */
-          <Box sx={{ textAlign: 'center', py: 4 }}>
-            <CameraAlt sx={{ fontSize: 64, color: 'grey.400', mb: 2 }} />
-            
-            <Alert severity="info" sx={{ mb: 3 }}>
-              Camera access is required to scan QR codes
-            </Alert>
+          /* Scanner Mode */
+          <Box sx={{ textAlign: 'center', py: 2 }}>
+            {/* Idle state */}
+            {!scanning && !scannedConfig && !scanError && (
+              <>
+                <CameraAlt sx={{ fontSize: 64, color: 'grey.400', mb: 2 }} />
+                <Alert severity="info" sx={{ mb: 3, textAlign: 'left' }}>
+                  Camera access is required to scan QR codes
+                </Alert>
+                <Typography variant="body1" gutterBottom>QR Code Scanner</Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                  Point your camera at a Frosted Crusts QR code to load a cake configuration.
+                </Typography>
+                <Button variant="contained" startIcon={<CameraAlt />} onClick={handleStartScan} sx={{ borderRadius: 2 }}>
+                  Start Camera
+                </Button>
+              </>
+            )}
 
-            <Typography variant="body1" color="text.secondary" gutterBottom>
-              QR Code Scanner
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Point your camera at a Productor1 QR code to load a cake configuration.
-            </Typography>
+            {/* Scanning state — #qr-reader must always be in the DOM while scanning */}
+            {scanning && (
+              <>
+                <Box id="qr-reader" sx={{ width: '100%', mb: 2 }} />
+                <Button variant="outlined" color="inherit" onClick={stopScanner} sx={{ borderRadius: 2 }}>
+                  Cancel
+                </Button>
+              </>
+            )}
 
-            {/* Scanner Implementation Placeholder - New: Better placeholder */}
-            <Paper 
-              variant="outlined" 
-              sx={{ 
-                mt: 3, 
-                p: 4, 
-                backgroundColor: 'grey.50',
-                borderStyle: 'dashed'
-              }}
-            >
-              <Typography variant="body2" color="text.secondary">
-                Scanner implementation coming soon...
-              </Typography>
-            </Paper>
+            {/* Success state */}
+            {scannedConfig && !scanning && (
+              <>
+                <CheckCircle sx={{ fontSize: 64, color: 'success.main', mb: 2 }} />
+                <Typography variant="h6" color="success.main" gutterBottom>QR Code Scanned!</Typography>
+                <Paper variant="outlined" sx={{ p: 2, mb: 3, textAlign: 'left', borderRadius: 2 }}>
+                  <Typography variant="body2">
+                    <strong>Type:</strong> {scannedConfig.productType}
+                  </Typography>
+                  {scannedConfig.size && (
+                    <Typography variant="body2"><strong>Size:</strong> {scannedConfig.size}"</Typography>
+                  )}
+                  {scannedConfig.flavors?.length > 0 && (
+                    scannedConfig.flavors.map((f: string, i: number) => (
+                      <Typography key={i} variant="body2"><strong>Layer {i + 1}:</strong> {f}</Typography>
+                    ))
+                  )}
+                </Paper>
+                <Stack direction="row" spacing={2} justifyContent="center">
+                  <Button variant="contained" onClick={handleLoadConfig} sx={{ borderRadius: 2 }}>
+                    Load Configuration
+                  </Button>
+                  <Button variant="outlined" onClick={() => { setScannedConfig(null); setScanError(null); }} sx={{ borderRadius: 2 }}>
+                    Scan Again
+                  </Button>
+                </Stack>
+              </>
+            )}
+
+            {/* Error state */}
+            {scanError && !scanning && !scannedConfig && (
+              <>
+                <Alert severity="error" sx={{ mb: 3, textAlign: 'left' }}>{scanError}</Alert>
+                <Button variant="contained" onClick={() => { setScanError(null); }} sx={{ borderRadius: 2 }}>
+                  Try Again
+                </Button>
+              </>
+            )}
           </Box>
         )}
       </DialogContent>

@@ -58,7 +58,7 @@ export default function ConfiguratorPage() {
   // Boolean for whether the user can proceed (must select required fields based on product)
   const canProceed = (() => {
     if (config.productType === 'cake') {
-      return config.size && config.flavor && config.shape;
+      return config.size && (config.flavors || []).length > 0 && config.shape;
     } else if (config.productType === 'cookies' || config.productType === 'muffins') {
       return config.boxSize && config.boxFlavors && config.boxFlavors.length > 0;
     }
@@ -127,8 +127,8 @@ export default function ConfiguratorPage() {
           <Box sx={{ flex: 1, minWidth: { xs: '100%', md: 300 }, width: { xs: '100%', md: 'auto' } }}>
             <Box
               sx={{
-                position: { lg: 'sticky' },
-                top: { lg: 32 },
+                position: { md: 'sticky' },
+                top: { md: 90 },
               }}
             >
               {/* Price Summary - Updated: Enhanced wrapper */}

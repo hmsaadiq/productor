@@ -5,12 +5,12 @@
 // Data Structures: Uses objects for price tables, arrays for add-ons, and numbers for calculations.
 // Security: No direct security features; only performs calculations.
 
-// Update CakeConfig type to match new context (with productType, etc.)
 interface CakeConfig {
   productType: 'cake' | 'cookies' | 'muffins';
   size?: string;
   layers?: number;
-  flavor?: string;
+  flavors?: string[];   // indexed by layer
+  filling?: string;
   addons?: string[];
   text?: string;
   shape?: 'circle' | 'heart';
@@ -25,47 +25,62 @@ interface CakeConfig {
   };
 }
 
-// Base prices for each cake size.
-const BASE_PRICES = {
-  '8': 50,
-  '10': 75,
-  '12': 100,
-  'Bento': 40,
-};
-// Base prices for cookie/muffin boxes
-const BOX_PRICES = {
-  4: 20,
-  6: 28,
-  12: 50,
+const CAKE_PRICES: Record<string, Record<number, number>> = {
+  '6':     { 1: 14000, 2: 22000, 3: 30000 },
+  '8':     { 1: 18000, 2: 28000, 3: 38000 },
+  '10':    { 1: 22000, 2: 36000, 3: 52000 },
+  '12':    { 1: 28000, 2: 48000, 3: 68000 },
+  'Bento': { 1: 9500  },
 };
 
-// Multiplier for each additional layer (beyond the first).
-const LAYER_MULTIPLIER = 1.5;
-// Prices for each add-on type.
-const ADDON_PRICES = {
-  fruit: 15,
-  text: 10,
-  filling: 20,
+const FLAVOR_UPCHARGES: Record<string, number> = {
+  vanilla: 0, chocolate: 0, 'red velvet': 0,
+  biscoff: 5000, carrot: 2000, lemon: 2000,
+  coconut: 2000, mocha: 2000, confetti: 3000,
+  'lemon and blueberry': 5000,
 };
 
-// Calculate the total price for a given configuration (cake, cookies, or muffins)
+const FILLING_BASE: Record<number, number> = { 2: 3000, 3: 5000 };
+
+const FILLING_UPCHARGES: Record<string, number> = {
+  'cream cheese': 3000,
+  'biscoff filling': 3000,
+};
+
+const ADDON_PRICES: Record<string, number> = {
+  butterflies: 2000,
+  'light glitter': 2000,
+  'heavy glitter': 5000,
+  'light pearl detailing': 2500,
+  'heavy pearl detailing': 5000,
+  'other ornaments': 0,
+};
+
+const BOX_PRICES: Record<number, number> = { 4: 12000, 6: 18000, 12: 32000 };
+
 export const calculatePrice = (config: CakeConfig): number => {
   if (config.productType === 'cake') {
-    // Cake pricing logic (as before)
-    let total = BASE_PRICES[config.size as keyof typeof BASE_PRICES] || 0;
-    if (config.layers && config.layers > 1) {
-      total *= Math.pow(LAYER_MULTIPLIER, config.layers - 1);
+    const size = config.size || '';
+    const layers = config.layers || 1;
+
+    const basePrice = CAKE_PRICES[size]?.[layers] || 0;
+
+    const flavorUpcharge = (config.flavors || []).reduce((sum, f) => {
+      return sum + (FLAVOR_UPCHARGES[f] || 0);
+    }, 0);
+
+    let fillingCost = 0;
+    if (layers >= 2 && config.filling) {
+      fillingCost = (FILLING_BASE[layers] || 0) + (FILLING_UPCHARGES[config.filling] || 0);
     }
-    if (config.addons) {
-      config.addons.forEach(addon => {
-        total += ADDON_PRICES[addon as keyof typeof ADDON_PRICES] || 0;
-      });
-    }
-    return Math.round(total);
+
+    const addonCost = (config.addons || []).reduce((sum, a) => {
+      return sum + (ADDON_PRICES[a] || 0);
+    }, 0);
+
+    return basePrice + flavorUpcharge + fillingCost + addonCost;
   } else if (config.productType === 'cookies' || config.productType === 'muffins') {
-    // Cookies/muffins pricing: base price per box size, no add-ons, up to 2 flavors
-    const boxPrice = config.boxSize ? BOX_PRICES[config.boxSize] : 0;
-    return boxPrice;
+    return config.boxSize ? (BOX_PRICES[config.boxSize] || 0) : 0;
   }
   return 0;
-}; 
+};

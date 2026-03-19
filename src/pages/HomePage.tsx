@@ -77,7 +77,7 @@ export default function HomePage() {
               fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4rem' },
             }}
           >
-            Customize Your Perfect Cake
+            Design Your Perfect Cake
           </Typography>
           
           <Typography
@@ -134,7 +134,7 @@ export default function HomePage() {
           <Stack direction="row" spacing={1} justifyContent="center" sx={{ mt: 3 }}>
             <Chip label="Secure Payments" size="small" variant="outlined" />
             <Chip label="Fresh Ingredients" size="small" variant="outlined" />
-            <Chip label="Same Day Delivery" size="small" variant="outlined" />
+            <Chip label="Order 48hrs in Advance" size="small" variant="outlined" />
           </Stack>
         </Box>
 
@@ -146,7 +146,7 @@ export default function HomePage() {
             textAlign="center"
             sx={{ mb: 6, fontWeight: 700 }}
           >
-            Why Choose Productor1?
+            Why Choose Frosted Crusts?
           </Typography>
           
           <Box
@@ -175,7 +175,7 @@ export default function HomePage() {
                     Multiple Sizes
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Choose from various sizes including our special Bento cakes for intimate celebrations
+                    Choose from 6", 8", 10", 12" round cakes or our special Bento cakes for intimate celebrations
                   </Typography>
                 </CardContent>
               </Card>
@@ -225,7 +225,7 @@ export default function HomePage() {
                     Premium Add-ons
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Enhance your cake with fresh fruits, premium fillings, and decorative elements
+                    Elevate your cake with glitter, pearl detailing, butterflies, and more premium decorations
                   </Typography>
                 </CardContent>
               </Card>
@@ -248,7 +248,7 @@ export default function HomePage() {
             Ready to Create Something Amazing?
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-            Join thousands of satisfied customers who trust us with their special moments
+            Trusted by customers across Nigeria for every special occasion
           </Typography>
           <Button
             variant="contained"
