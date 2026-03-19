@@ -18,7 +18,6 @@ import {
   ListItemText,
   Chip,
   Avatar,
-  Card,
   CardContent,
   Stack,
 } from '@mui/material';
@@ -31,6 +30,8 @@ import {
 } from '@mui/icons-material';
 // Import useConfig hook to access current cake configuration from context.
 import { useConfig } from '../context/ConfigContext';
+// Import the dynamic product preview renderer.
+import ProductPreview from './ProductPreview';
 
 // PriceSummary component displays the current cake configuration and price - Updated: Enhanced with MUI styling and better organization.
 export default function PriceSummary() {
@@ -242,7 +243,7 @@ export default function PriceSummary() {
           p: 2, 
           backgroundColor: 'primary.main',
           borderRadius: 2,
-          color: 'white',
+          color: 'primary.contrastText',
           textAlign: 'center'
         }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 1 }}>
@@ -256,35 +257,8 @@ export default function PriceSummary() {
           </Typography>
         </Box>
 
-        {/* Product Preview - Updated: Enhanced visual preview */}
-        <Card variant="outlined" sx={{ mt: 3, backgroundColor: 'grey.50' }}>
-          <CardContent sx={{ textAlign: 'center', py: 3 }}>
-            <Avatar 
-              sx={{ 
-                width: 80, 
-                height: 80, 
-                mx: 'auto', 
-                mb: 2,
-                backgroundColor: 'primary.main',
-                fontSize: '2rem'
-              }}
-            >
-              {config.productType === 'cake' ? <Cake /> : <Cookie />}
-            </Avatar>
-            <Typography variant="body2" color="text.secondary" fontWeight="medium">
-              {config.productType === 'cake'
-                ? `${config.size || 'Custom'}" ${config.flavor || 'Cake'}`
-                : config.productType === 'cookies'
-                ? `${config.boxSize || 'Custom'} Cookies`
-                : config.productType === 'muffins'
-                ? `${config.boxSize || 'Custom'} Muffins`
-                : 'Your Order'}
-            </Typography>
-            <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
-              Preview
-            </Typography>
-          </CardContent>
-        </Card>
+        {/* Product Preview - Dynamic SVG renderer */}
+        <ProductPreview />
       </CardContent>
     </Paper>
   );

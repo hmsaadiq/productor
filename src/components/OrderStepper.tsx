@@ -72,7 +72,7 @@ export default function OrderStepper({
             : active 
             ? 'primary.main' 
             : 'grey.300',
-          color: 'white',
+          color: 'primary.contrastText',
           fontSize: variant === 'compact' ? '0.75rem' : '0.875rem',
           fontWeight: 600,
           transition: 'all 0.3s ease',

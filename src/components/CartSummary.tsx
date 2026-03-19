@@ -125,7 +125,7 @@ export default function CartSummary() {
           p: 2, 
           backgroundColor: 'primary.main',
           borderRadius: 2,
-          color: 'white',
+          color: 'primary.contrastText',
           textAlign: 'center'
         }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 1 }}>

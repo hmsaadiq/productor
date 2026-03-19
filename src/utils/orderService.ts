@@ -31,42 +31,28 @@ import { canCancelOrder } from './orderStatusRules';
 //   return obj;
 // }
 
-// Create a new order from cart items
-export const createOrderFromCart = async (user: User, cartItems: CartItem[], deliveryDetails: any) => {
+// Create a new order via SECURITY DEFINER RPC — bypasses RLS, user_id set server-side via auth.uid()
+export const createOrderFromCart = async (cartItems: CartItem[], deliveryDetails: any) => {
   try {
     if (!cartItems || cartItems.length === 0) {
       throw new Error('Cart is empty');
     }
 
-    // Calculate total price
     const totalPrice = cartItems.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
-    const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
-    // Create order object with cart items
-    const order = {
-      user_id: user.id,
-      config: cartItems[0]?.customization || {}, // Use first item's config for compatibility
-      items: cartItems,
-      status: 'pending',
-      total_price: totalPrice,
-      shipping_address: deliveryDetails,
-    };
-    
-    console.log('Order to insert:', JSON.stringify(order, null, 2));
-
-    // Insert order into Supabase 'orders' table.
-    const { data, error } = await supabase
-      .from('orders')
-      .insert(order)
-      .select()
-      .single();
+    const { data, error } = await supabase.rpc('create_order_from_cart', {
+      p_config: cartItems[0]?.customization || {},
+      p_items: cartItems as unknown as Record<string, unknown>[],
+      p_total_price: totalPrice,
+      p_shipping_address: deliveryDetails,
+    });
 
     if (error) {
       console.error('Supabase error details:', error);
       throw new Error(`Database error: ${error.message}`);
     }
 
-    return data.id;
+    return data as number;
   } catch (error) {
     console.error('Error creating order from cart:', error);
     throw error;

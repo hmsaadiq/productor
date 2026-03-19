@@ -1,0 +1,105 @@
+/* AnimatedStepper — horizontal step indicator with animated transitions */
+
+.as-root {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+/* ── Step item ──────────────────────────────────────────── */
+.as-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── Circular indicator ─────────────────────────────────── */
+.as-indicator {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #d0d0d0;
+  color: #757575;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: background 0.35s ease, transform 0.35s ease, box-shadow 0.35s ease;
+}
+
+.as-step.as-completed .as-indicator {
+  background: #4caf50;
+  color: white;
+}
+
+.as-step.as-active .as-indicator {
+  background: #ef3966;
+  color: white;
+  transform: scale(1.15);
+  box-shadow: 0 0 0 5px rgba(239, 57, 102, 0.18);
+  animation: as-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes as-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 5px rgba(239, 57, 102, 0.18);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(239, 57, 102, 0.06);
+  }
+}
+
+/* ── Step label ─────────────────────────────────────────── */
+.as-label {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #9e9e9e;
+  text-align: center;
+  white-space: nowrap;
+  transition: color 0.35s ease, font-weight 0.1s ease;
+}
+
+.as-step.as-active .as-label {
+  color: #ef3966;
+  font-weight: 700;
+}
+
+.as-step.as-completed .as-label {
+  color: #4caf50;
+}
+
+/* ── Connector line ─────────────────────────────────────── */
+.as-connector {
+  flex: 1;
+  min-width: 48px;
+  height: 2px;
+  background: #e0e0e0;
+  margin-top: 18px; /* vertically aligns with centre of indicator */
+  position: relative;
+  overflow: hidden;
+}
+
+/* Animated fill overlay — scales in from the left on completion */
+.as-connector::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #4caf50;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.45s ease;
+}
+
+.as-connector.as-connector-done::after {
+  transform: scaleX(1);
+}
+
+/* ── Check icon ─────────────────────────────────────────── */
+.as-check-icon {
+  width: 18px;
+  height: 18px;
+  fill: white;
+}

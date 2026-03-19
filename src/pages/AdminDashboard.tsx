@@ -15,7 +15,12 @@ import {
   Box,
   Alert,
   Button,
+  Divider,
+  Skeleton,
+  useMediaQuery,
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { InboxOutlined } from '@mui/icons-material';
 import { supabase } from '../utils/supabase';
 import { useConfig } from '../context/ConfigContext';
 import { CancelOrderButton } from '../components/CancelOrderButton';
@@ -46,6 +51,13 @@ export default function AdminDashboard() {
   const { user } = useConfig();
   const [userProfiles, setUserProfiles] = useState<{[key: string]: any}>({});
   const [expandedOrder, setExpandedOrder] = useState<number | null>(null);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [expandedMobileId, setExpandedMobileId] = useState<number | null>(null);
+
+  const toggleExpand = (id: number) => {
+    setExpandedMobileId(prev => (prev === id ? null : id));
+  };
 
   useEffect(() => {
     checkAdminAndLoadOrders();
@@ -67,7 +79,9 @@ export default function AdminDashboard() {
   useEffect(() => {
     const loadUserProfiles = async () => {
       if (orders.length > 0) {
-        const userIds = Array.from(new Set(orders.map(order => order.user_id)));
+        // Filter out null — guest orders have no user_id, and .in() rejects null values
+        const userIds = Array.from(new Set(orders.map(order => order.user_id).filter(Boolean)));
+        if (userIds.length === 0) return;
         const { data } = await supabase
           .from('profiles')
           .select('id, full_name, email')
@@ -139,7 +153,34 @@ export default function AdminDashboard() {
     }
   };
 
-  if (loading) return <Typography>Loading...</Typography>;
+  if (loading) {
+    return (
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Skeleton variant="text" width={250} height={48} sx={{ mb: 2 }} />
+        <Skeleton variant="rounded" height={48} sx={{ mb: 3 }} />
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                {Array.from({ length: 9 }).map((_, i) => (
+                  <TableCell key={i}><Skeleton variant="text" /></TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <TableRow key={i}>
+                  {Array.from({ length: 9 }).map((_, j) => (
+                    <TableCell key={j}><Skeleton variant="text" /></TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -151,191 +192,378 @@ export default function AdminDashboard() {
         Total Orders: {orders.length}
       </Alert>
 
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Order ID</TableCell>
-              <TableCell>Customer</TableCell>
-              <TableCell>Phone</TableCell>
-              <TableCell>State</TableCell>
-              <TableCell>Items</TableCell>
-              <TableCell>Total</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Date</TableCell>
-              <TableCell>Details</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {orders.map((order) => (
-              <React.Fragment key={order.id}>
-                <TableRow>
-                  <TableCell>#{order.id}</TableCell>
-                  <TableCell>
-                    <Box>
-                      <Typography variant="body2" fontWeight="bold">
-                        {userProfiles[order.user_id]?.full_name || 'N/A'}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {userProfiles[order.user_id]?.email || order.user_id}
-                      </Typography>
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2">
-                      {order.shipping_address?.phone || order.config?.deliveryDetails?.phone || 'N/A'}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2">
-                      {order.shipping_address?.state || order.config?.deliveryDetails?.state || 'N/A'}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2" fontWeight="bold">
-                      {Array.isArray(order.items) ? order.items.length : 1} item(s)
-                    </Typography>
-                  </TableCell>
-                  <TableCell>₦{(order.total_price || order.config?.price || 0).toLocaleString()}</TableCell>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexDirection: 'column' }}>
-                      <AdminOrderStatusControls
-                        currentStatus={order.status as OrderStatus}
-                        onStatusChange={async (newStatus: OrderStatus) => {
-                          await updateOrderStatus(order.id, newStatus);
-                        }}
-                      />
-                      <CancelOrderButton
-                        order={{
-                          id: String(order.id),
-                          userId: order.user_id,
-                          createdAt: order.created_at,
-                          status: order.status,
-                          config: order.config,
-                        } as OrderType}
-                        isAdmin={true}
-                        onSuccess={loadOrders}
-                      />
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    {new Date(order.created_at).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      size="small"
-                      onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}
-                    >
-                      {expandedOrder === order.id ? 'Hide' : 'Show'}
-                    </Button>
-                  </TableCell>
-                </TableRow>
-                {expandedOrder === order.id && (
+      {orders.length === 0 ? (
+        <Box sx={{ textAlign: 'center', py: 8 }}>
+          <InboxOutlined sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+          <Typography variant="h6" color="text.secondary" gutterBottom>
+            No orders yet
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Orders will appear here as customers place them.
+          </Typography>
+        </Box>
+      ) : (
+      <>
+      {/* Desktop: Table view */}
+      {!isMobile && (
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Order ID</TableCell>
+                <TableCell>Customer</TableCell>
+                <TableCell>Phone</TableCell>
+                <TableCell>State</TableCell>
+                <TableCell>Items</TableCell>
+                <TableCell>Total</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Date</TableCell>
+                <TableCell>Details</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {orders.map((order) => (
+                <React.Fragment key={order.id}>
                   <TableRow>
-                    <TableCell colSpan={9} sx={{ bgcolor: 'grey.50', p: 3 }}>
-                      {/* Cancellation Info */}
-                      {order.status === 'cancelled' && order.cancelled_at && (
-                        <Box sx={{ mb: 3, p: 2, border: 2, borderColor: 'error.main', bgcolor: 'background.paper', borderRadius: 1 }}>
-                          <Typography variant="subtitle2" fontWeight="bold" color="error.dark" gutterBottom>
-                            Order Cancelled
-                          </Typography>
-                          <Typography variant="body2">
-                            <strong>Cancelled:</strong> {new Date(order.cancelled_at).toLocaleString()}
-                          </Typography>
-                          <Typography variant="body2">
-                            <strong>By:</strong> {order.cancelled_by_role === 'admin' ? 'Admin' : 'Customer'}
-                          </Typography>
-                          {order.cancellation_reason && (
-                            <Typography variant="body2">
-                              <strong>Reason:</strong> {order.cancellation_reason}
-                            </Typography>
-                          )}
-                          {order.previous_status && (
-                            <Typography variant="body2">
-                              <strong>Previous Status:</strong> {order.previous_status}
-                            </Typography>
-                          )}
-                        </Box>
-                      )}
-
-                      <Box sx={{ display: 'flex', gap: 4, flexDirection: { xs: 'column', md: 'row' } }}>
-                        {/* Order Items */}
-                        <Box sx={{ flex: 1 }}>
-                          <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-                            Order Items
-                          </Typography>
-                          {Array.isArray(order.items) ? (
-                            order.items.map((item: any, idx: number) => (
-                              <Box key={idx} sx={{ mb: 2, p: 2, bgcolor: 'white', borderRadius: 1 }}>
-                                <Typography variant="body2" fontWeight="bold" sx={{ textTransform: 'capitalize' }}>
-                                  {item.productType || 'Item'} (Qty: {item.quantity || 1})
-                                </Typography>
-                                <Typography variant="caption" color="text.secondary">
-                                  {item.productType === 'cake' && item.customization && (
-                                    `${item.customization.size}" ${item.customization.shape} • ${item.customization.layers} layer(s) • ${item.customization.flavor}${item.customization.text ? ` • "${item.customization.text}"` : ''}`
-                                  )}
-                                  {(item.productType === 'cookies' || item.productType === 'muffins') && item.customization && (
-                                    `Box of ${item.customization.boxSize} • ${item.customization.boxFlavors?.join(', ') || 'No flavors'}`
-                                  )}
-                                </Typography>
-                                <Typography variant="body2" sx={{ mt: 1 }}>
-                                  ₦{item.unitPrice} × {item.quantity} = ₦{(item.unitPrice * item.quantity).toLocaleString()}
-                                </Typography>
-                              </Box>
-                            ))
-                          ) : order.config ? (
-                            <Box sx={{ p: 2, bgcolor: 'white', borderRadius: 1 }}>
-                              <Typography variant="body2" fontWeight="bold" sx={{ textTransform: 'capitalize' }}>
-                                {order.config.productType}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                {order.config.productType === 'cake' && (
-                                  `${order.config.size}" ${order.config.shape} • ${order.config.layers} layer(s) • ${order.config.flavor}`
-                                )}
-                                {(order.config.productType === 'cookies' || order.config.productType === 'muffins') && (
-                                  `Box of ${order.config.boxSize}`
-                                )}
-                              </Typography>
-                            </Box>
-                          ) : (
-                            <Typography variant="body2">No items</Typography>
-                          )}
-                        </Box>
-                        
-                        {/* Delivery Address */}
-                        <Box sx={{ flex: 1 }}>
-                          <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-                            Delivery Address
-                          </Typography>
-                          <Box sx={{ p: 2, bgcolor: 'white', borderRadius: 1 }}>
-                            {order.shipping_address ? (
-                              <>
-                                <Typography variant="body2"><strong>Name:</strong> {order.shipping_address.name}</Typography>
-                                <Typography variant="body2"><strong>Phone:</strong> {order.shipping_address.phone}</Typography>
-                                <Typography variant="body2"><strong>Address:</strong> {order.shipping_address.address}</Typography>
-                                <Typography variant="body2"><strong>State:</strong> {order.shipping_address.state}</Typography>
-                              </>
-                            ) : order.config?.deliveryDetails ? (
-                              <>
-                                <Typography variant="body2"><strong>Name:</strong> {order.config.deliveryDetails.name}</Typography>
-                                <Typography variant="body2"><strong>Phone:</strong> {order.config.deliveryDetails.phone}</Typography>
-                                <Typography variant="body2"><strong>Address:</strong> {order.config.deliveryDetails.address}</Typography>
-                                <Typography variant="body2"><strong>State:</strong> {order.config.deliveryDetails.state}</Typography>
-                              </>
-                            ) : (
-                              <Typography variant="body2">No delivery details</Typography>
-                            )}
-                          </Box>
-                        </Box>
+                    <TableCell>#{order.id}</TableCell>
+                    <TableCell>
+                      <Box>
+                        <Typography variant="body2" fontWeight="bold">
+                          {userProfiles[order.user_id]?.full_name || order.shipping_address?.name || 'Guest'}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {userProfiles[order.user_id]?.email || order.shipping_address?.email || 'No email'}
+                        </Typography>
                       </Box>
                     </TableCell>
+                    <TableCell>
+                      <Typography variant="body2">
+                        {order.shipping_address?.phone || order.config?.deliveryDetails?.phone || 'N/A'}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2">
+                        {order.shipping_address?.state || order.config?.deliveryDetails?.state || 'N/A'}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" fontWeight="bold">
+                        {Array.isArray(order.items) ? order.items.length : 1} item(s)
+                      </Typography>
+                    </TableCell>
+                    <TableCell>₦{(order.total_price || order.config?.price || 0).toLocaleString()}</TableCell>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexDirection: 'column' }}>
+                        <AdminOrderStatusControls
+                          currentStatus={order.status as OrderStatus}
+                          onStatusChange={async (newStatus: OrderStatus) => {
+                            await updateOrderStatus(order.id, newStatus);
+                          }}
+                        />
+                        <CancelOrderButton
+                          order={{
+                            id: String(order.id),
+                            userId: order.user_id,
+                            createdAt: order.created_at,
+                            status: order.status,
+                            config: order.config,
+                          } as OrderType}
+                          isAdmin={true}
+                          onSuccess={loadOrders}
+                        />
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      {new Date(order.created_at).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        size="small"
+                        onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}
+                      >
+                        {expandedOrder === order.id ? 'Hide' : 'Show'}
+                      </Button>
+                    </TableCell>
                   </TableRow>
+                  {expandedOrder === order.id && (
+                    <TableRow>
+                      <TableCell colSpan={9} sx={{ bgcolor: 'grey.50', p: 3 }}>
+                        {/* Cancellation Info */}
+                        {order.status === 'cancelled' && order.cancelled_at && (
+                          <Box sx={{ mb: 3, p: 2, border: 2, borderColor: 'error.main', bgcolor: 'background.paper', borderRadius: 1 }}>
+                            <Typography variant="subtitle2" fontWeight="bold" color="error.dark" gutterBottom>
+                              Order Cancelled
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Cancelled:</strong> {new Date(order.cancelled_at).toLocaleString()}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>By:</strong> {order.cancelled_by_role === 'admin' ? 'Admin' : 'Customer'}
+                            </Typography>
+                            {order.cancellation_reason && (
+                              <Typography variant="body2">
+                                <strong>Reason:</strong> {order.cancellation_reason}
+                              </Typography>
+                            )}
+                            {order.previous_status && (
+                              <Typography variant="body2">
+                                <strong>Previous Status:</strong> {order.previous_status}
+                              </Typography>
+                            )}
+                          </Box>
+                        )}
+
+                        <Box sx={{ display: 'flex', gap: 4, flexDirection: { xs: 'column', md: 'row' } }}>
+                          {/* Order Items */}
+                          <Box sx={{ flex: 1 }}>
+                            <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
+                              Order Items
+                            </Typography>
+                            {Array.isArray(order.items) ? (
+                              order.items.map((item: any, idx: number) => (
+                                <Box key={idx} sx={{ mb: 2, p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
+                                  <Typography variant="body2" fontWeight="bold" sx={{ textTransform: 'capitalize' }}>
+                                    {item.productType || 'Item'} (Qty: {item.quantity || 1})
+                                  </Typography>
+                                  <Typography variant="caption" color="text.secondary">
+                                    {item.productType === 'cake' && item.customization && (
+                                      `${item.customization.size}" ${item.customization.shape} • ${item.customization.layers} layer(s) • ${item.customization.flavor}${item.customization.text ? ` • "${item.customization.text}"` : ''}`
+                                    )}
+                                    {(item.productType === 'cookies' || item.productType === 'muffins') && item.customization && (
+                                      `Box of ${item.customization.boxSize} • ${item.customization.boxFlavors?.join(', ') || 'No flavors'}`
+                                    )}
+                                  </Typography>
+                                  <Typography variant="body2" sx={{ mt: 1 }}>
+                                    ₦{item.unitPrice} × {item.quantity} = ₦{(item.unitPrice * item.quantity).toLocaleString()}
+                                  </Typography>
+                                </Box>
+                              ))
+                            ) : order.config ? (
+                              <Box sx={{ p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
+                                <Typography variant="body2" fontWeight="bold" sx={{ textTransform: 'capitalize' }}>
+                                  {order.config.productType}
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                  {order.config.productType === 'cake' && (
+                                    `${order.config.size}" ${order.config.shape} • ${order.config.layers} layer(s) • ${order.config.flavor}`
+                                  )}
+                                  {(order.config.productType === 'cookies' || order.config.productType === 'muffins') && (
+                                    `Box of ${order.config.boxSize}`
+                                  )}
+                                </Typography>
+                              </Box>
+                            ) : (
+                              <Typography variant="body2">No items</Typography>
+                            )}
+                          </Box>
+
+                          {/* Delivery Address */}
+                          <Box sx={{ flex: 1 }}>
+                            <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
+                              Delivery Address
+                            </Typography>
+                            <Box sx={{ p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
+                              {order.shipping_address ? (
+                                <>
+                                  <Typography variant="body2"><strong>Name:</strong> {order.shipping_address.name}</Typography>
+                                  <Typography variant="body2"><strong>Phone:</strong> {order.shipping_address.phone}</Typography>
+                                  <Typography variant="body2"><strong>Address:</strong> {order.shipping_address.address}</Typography>
+                                  <Typography variant="body2"><strong>State:</strong> {order.shipping_address.state}</Typography>
+                                </>
+                              ) : order.config?.deliveryDetails ? (
+                                <>
+                                  <Typography variant="body2"><strong>Name:</strong> {order.config.deliveryDetails.name}</Typography>
+                                  <Typography variant="body2"><strong>Phone:</strong> {order.config.deliveryDetails.phone}</Typography>
+                                  <Typography variant="body2"><strong>Address:</strong> {order.config.deliveryDetails.address}</Typography>
+                                  <Typography variant="body2"><strong>State:</strong> {order.config.deliveryDetails.state}</Typography>
+                                </>
+                              ) : (
+                                <Typography variant="body2">No delivery details</Typography>
+                              )}
+                            </Box>
+                          </Box>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </React.Fragment>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
+
+      {/* Mobile: Card view */}
+      {isMobile && (
+        <Box display="flex" flexDirection="column" gap={2}>
+          {orders.map(order => (
+            <Paper key={order.id} sx={{ p: 2, borderRadius: 2 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                {/* Header: ID + status chip */}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography variant="subtitle1" fontWeight="bold">
+                    #{order.id}
+                  </Typography>
+                  <Chip
+                    label={order.status}
+                    color={getStatusColor(order.status) as any}
+                    size="small"
+                  />
+                </Box>
+
+                {/* Customer */}
+                <Box>
+                  <Typography variant="body2" fontWeight="bold">
+                    {userProfiles[order.user_id]?.full_name || order.shipping_address?.name || 'Guest'}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {userProfiles[order.user_id]?.email || order.shipping_address?.email || 'No email'}
+                  </Typography>
+                </Box>
+
+                {/* Total + Date */}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography variant="body2" fontWeight="bold">
+                    ₦{(order.total_price || order.config?.price || 0).toLocaleString()}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {new Date(order.created_at).toLocaleDateString()}
+                  </Typography>
+                </Box>
+
+                {/* Status controls */}
+                <AdminOrderStatusControls
+                  currentStatus={order.status as OrderStatus}
+                  onStatusChange={async (newStatus: OrderStatus) => {
+                    await updateOrderStatus(order.id, newStatus);
+                  }}
+                />
+                <CancelOrderButton
+                  order={{
+                    id: String(order.id),
+                    userId: order.user_id,
+                    createdAt: order.created_at,
+                    status: order.status,
+                    config: order.config,
+                  } as OrderType}
+                  isAdmin={true}
+                  onSuccess={loadOrders}
+                />
+
+                {/* View Details toggle */}
+                <Button size="small" onClick={() => toggleExpand(order.id)}>
+                  {expandedMobileId === order.id ? 'Hide Details' : 'View Details'}
+                </Button>
+
+                {/* Expandable details */}
+                {expandedMobileId === order.id && (
+                  <Box mt={2} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    {/* Cancellation info */}
+                    {order.status === 'cancelled' && order.cancelled_at && (
+                      <Box sx={{ p: 1.5, border: 1, borderColor: 'error.main', borderRadius: 1 }}>
+                        <Typography variant="body2" fontWeight="bold" color="error.dark">
+                          Order Cancelled
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Cancelled:</strong> {new Date(order.cancelled_at).toLocaleString()}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>By:</strong> {order.cancelled_by_role === 'admin' ? 'Admin' : 'Customer'}
+                        </Typography>
+                        {order.cancellation_reason && (
+                          <Typography variant="body2">
+                            <strong>Reason:</strong> {order.cancellation_reason}
+                          </Typography>
+                        )}
+                        {order.previous_status && (
+                          <Typography variant="body2">
+                            <strong>Previous status:</strong> {order.previous_status}
+                          </Typography>
+                        )}
+                      </Box>
+                    )}
+
+                    <Divider />
+
+                    {/* Order items */}
+                    <Box>
+                      <Typography variant="body2" fontWeight="bold" gutterBottom>
+                        Order Items
+                      </Typography>
+                      {Array.isArray(order.items) ? (
+                        order.items.map((item: any, idx: number) => (
+                          <Box key={idx} sx={{ mb: 1, p: 1.5, bgcolor: 'grey.50', borderRadius: 1 }}>
+                            <Typography variant="body2" fontWeight="bold" sx={{ textTransform: 'capitalize' }}>
+                              {item.productType || 'Item'} (Qty: {item.quantity || 1})
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {item.productType === 'cake' && item.customization && (
+                                `${item.customization.size}" ${item.customization.shape} • ${item.customization.layers} layer(s) • ${item.customization.flavor}${item.customization.text ? ` • "${item.customization.text}"` : ''}`
+                              )}
+                              {(item.productType === 'cookies' || item.productType === 'muffins') && item.customization && (
+                                `Box of ${item.customization.boxSize} • ${item.customization.boxFlavors?.join(', ') || 'No flavors'}`
+                              )}
+                            </Typography>
+                            <Typography variant="body2">
+                              ₦{item.unitPrice} × {item.quantity} = ₦{(item.unitPrice * item.quantity).toLocaleString()}
+                            </Typography>
+                          </Box>
+                        ))
+                      ) : order.config ? (
+                        <Box sx={{ p: 1.5, bgcolor: 'grey.50', borderRadius: 1 }}>
+                          <Typography variant="body2" fontWeight="bold" sx={{ textTransform: 'capitalize' }}>
+                            {order.config.productType}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {order.config.productType === 'cake' && (
+                              `${order.config.size}" ${order.config.shape} • ${order.config.layers} layer(s) • ${order.config.flavor}`
+                            )}
+                            {(order.config.productType === 'cookies' || order.config.productType === 'muffins') && (
+                              `Box of ${order.config.boxSize}`
+                            )}
+                          </Typography>
+                        </Box>
+                      ) : (
+                        <Typography variant="body2">No items</Typography>
+                      )}
+                    </Box>
+
+                    <Divider />
+
+                    {/* Shipping address */}
+                    <Box>
+                      <Typography variant="body2" fontWeight="bold" gutterBottom>
+                        Delivery Address
+                      </Typography>
+                      <Box sx={{ p: 1.5, bgcolor: 'grey.50', borderRadius: 1 }}>
+                        {order.shipping_address ? (
+                          <>
+                            <Typography variant="body2"><strong>Name:</strong> {order.shipping_address.name}</Typography>
+                            <Typography variant="body2"><strong>Phone:</strong> {order.shipping_address.phone}</Typography>
+                            <Typography variant="body2"><strong>Address:</strong> {order.shipping_address.address}</Typography>
+                            <Typography variant="body2"><strong>State:</strong> {order.shipping_address.state}</Typography>
+                          </>
+                        ) : order.config?.deliveryDetails ? (
+                          <>
+                            <Typography variant="body2"><strong>Name:</strong> {order.config.deliveryDetails.name}</Typography>
+                            <Typography variant="body2"><strong>Phone:</strong> {order.config.deliveryDetails.phone}</Typography>
+                            <Typography variant="body2"><strong>Address:</strong> {order.config.deliveryDetails.address}</Typography>
+                            <Typography variant="body2"><strong>State:</strong> {order.config.deliveryDetails.state}</Typography>
+                          </>
+                        ) : (
+                          <Typography variant="body2">No delivery details</Typography>
+                        )}
+                      </Box>
+                    </Box>
+                  </Box>
                 )}
-              </React.Fragment>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+              </Box>
+            </Paper>
+          ))}
+        </Box>
+      )}
+      </>
+      )}
     </Container>
   );
 }
