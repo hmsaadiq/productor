@@ -297,6 +297,12 @@
   }
 
   .card-nav-actions {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+
+  .card-nav-actions .button-label-text {
     display: none;
   }
 

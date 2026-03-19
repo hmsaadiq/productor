@@ -7,23 +7,23 @@ export function createAppTheme(mode: PaletteMode) {
     palette: {
       mode,
       primary: {
-        main: '#ef3966',
-        dark: '#d62f56',
-        light: '#f25a7a',
+        main: isLight ? '#ef3966' : '#f0607f',
+        dark: isLight ? '#d62f56' : '#d94d6e',
+        light: isLight ? '#f25a7a' : '#f5879c',
         contrastText: '#ffffff',
       },
       secondary: {
-        main: '#9a794c',
+        main: isLight ? '#9a794c' : '#d4a96a',
         dark: '#7a5f3a',
-        light: '#b8956b',
+        light: isLight ? '#b8956b' : '#e0c090',
       },
       background: {
-        default: isLight ? '#f8f6f6' : '#121212',
-        paper: isLight ? '#ffffff' : '#1e1e1e',
+        default: isLight ? '#f8f6f6' : '#0f0f0f',
+        paper: isLight ? '#ffffff' : '#1a1a1a',
       },
       text: {
         primary: isLight ? '#1b0d11' : '#f5f0f1',
-        secondary: isLight ? '#9a794c' : '#b8956b',
+        secondary: isLight ? '#9a794c' : 'rgba(255,255,255,0.65)',
       },
       grey: isLight
         ? {
@@ -123,12 +123,13 @@ export function createAppTheme(mode: PaletteMode) {
         styleOverrides: {
           root: {
             borderRadius: 16,
+            backgroundColor: isLight ? undefined : '#242424',
             boxShadow: isLight
               ? '0 4px 20px -2px rgba(27, 13, 17, 0.05)'
               : '0 4px 20px -2px rgba(0, 0, 0, 0.3)',
             border: isLight
               ? '1px solid rgba(243, 231, 234, 0.5)'
-              : '1px solid rgba(255, 255, 255, 0.06)',
+              : '1px solid rgba(255, 255, 255, 0.08)',
             '&:hover': {
               transform: 'translateY(-2px)',
               boxShadow: isLight

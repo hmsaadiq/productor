@@ -218,7 +218,7 @@ const CardNav: React.FC<CardNavProps> = ({
           >
             <BakeryDining className="logo-icon" />
             <span className="logo-text" style={mode === 'dark' ? { color: '#f5f0f1' } : undefined}>
-              Productor1
+              Frosted Crusts
             </span>
           </div>
 

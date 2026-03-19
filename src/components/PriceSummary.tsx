@@ -117,7 +117,7 @@ export default function PriceSummary() {
                 <ListItem sx={{ px: 0, py: 0.5 }}>
                   <ListItemText 
                     primary="Layers & Flavor"
-                    secondary={`${config.layers || 1} layer${config.layers !== 1 ? 's' : ''} • ${config.flavor ? config.flavor.charAt(0).toUpperCase() + config.flavor.slice(1) : 'Not selected'}`}
+                    secondary={`${config.layers || 1} layer${config.layers !== 1 ? 's' : ''} • ${(config.flavors || []).length ? config.flavors!.map((f, i) => `Layer ${i + 1}: ${f}`).join(', ') : 'Not selected'}`}
                   />
                 </ListItem>
                 

@@ -26,7 +26,8 @@ interface CakeConfig {
   // Cake-specific fields
   size?: string;
   layers?: number;
-  flavor?: string;
+  flavors?: string[];   // indexed by layer: flavors[0] = layer 1, etc.
+  filling?: string;     // shown for 2+ layer cakes
   addons?: string[];
   text?: string;
   shape?: 'circle' | 'heart';
@@ -53,7 +54,8 @@ const defaultConfig: CakeConfig = {
   productType: 'cake', // Default to cake
   size: '',
   layers: 1,
-  flavor: '',
+  flavors: [],
+  filling: undefined,
   addons: [],
   text: '',
   shape: 'circle', // Default shape

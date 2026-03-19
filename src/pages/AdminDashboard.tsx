@@ -321,36 +321,112 @@ export default function AdminDashboard() {
                             </Typography>
                             {Array.isArray(order.items) ? (
                               order.items.map((item: any, idx: number) => (
-                                <Box key={idx} sx={{ mb: 2, p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
-                                  <Typography variant="body2" fontWeight="bold" sx={{ textTransform: 'capitalize' }}>
+                                <Box key={idx} sx={{ mb: 2, p: 2, bgcolor: 'background.paper', borderRadius: 1, borderLeft: '3px solid', borderColor: 'primary.main' }}>
+                                  <Typography variant="body2" fontWeight="bold" sx={{ textTransform: 'capitalize', mb: 0.5 }}>
                                     {item.productType || 'Item'} (Qty: {item.quantity || 1})
                                   </Typography>
-                                  <Typography variant="caption" color="text.secondary">
-                                    {item.productType === 'cake' && item.customization && (
-                                      `${item.customization.size}" ${item.customization.shape} • ${item.customization.layers} layer(s) • ${item.customization.flavor}${item.customization.text ? ` • "${item.customization.text}"` : ''}`
-                                    )}
-                                    {(item.productType === 'cookies' || item.productType === 'muffins') && item.customization && (
-                                      `Box of ${item.customization.boxSize} • ${item.customization.boxFlavors?.join(', ') || 'No flavors'}`
-                                    )}
-                                  </Typography>
-                                  <Typography variant="body2" sx={{ mt: 1 }}>
-                                    ₦{item.unitPrice} × {item.quantity} = ₦{(item.unitPrice * item.quantity).toLocaleString()}
+                                  {item.productType === 'cake' && item.customization && (
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+                                      <Typography variant="caption" color="text.secondary">
+                                        <strong>Size:</strong> {item.customization.size}" • <strong>Shape:</strong> {item.customization.shape} • <strong>Layers:</strong> {item.customization.layers}
+                                      </Typography>
+                                      {(item.customization.flavors || []).length > 0
+                                        ? (item.customization.flavors || []).map((f: string, li: number) => (
+                                          <Typography key={li} variant="caption" color="text.secondary">
+                                            <strong>Layer {li + 1} flavor:</strong> {f}
+                                          </Typography>
+                                        ))
+                                        : item.customization.flavor && (
+                                          <Typography variant="caption" color="text.secondary">
+                                            <strong>Flavor:</strong> {item.customization.flavor}
+                                          </Typography>
+                                        )
+                                      }
+                                      {item.customization.filling && (
+                                        <Typography variant="caption" color="text.secondary">
+                                          <strong>Filling:</strong> {item.customization.filling}
+                                        </Typography>
+                                      )}
+                                      {item.customization.addons?.length > 0 && (
+                                        <Typography variant="caption" color="text.secondary">
+                                          <strong>Add-ons:</strong> {item.customization.addons.join(', ')}
+                                        </Typography>
+                                      )}
+                                      {item.customization.text && (
+                                        <Typography variant="caption" color="text.secondary">
+                                          <strong>Writing:</strong> "{item.customization.text}"
+                                        </Typography>
+                                      )}
+                                    </Box>
+                                  )}
+                                  {(item.productType === 'cookies' || item.productType === 'muffins') && item.customization && (
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+                                      <Typography variant="caption" color="text.secondary">
+                                        <strong>Box size:</strong> {item.customization.boxSize}
+                                      </Typography>
+                                      {item.customization.boxFlavors?.length > 0 && (
+                                        <Typography variant="caption" color="text.secondary">
+                                          <strong>Flavors:</strong> {item.customization.boxFlavors.join(', ')}
+                                        </Typography>
+                                      )}
+                                    </Box>
+                                  )}
+                                  <Typography variant="body2" sx={{ mt: 1, fontWeight: 600 }}>
+                                    ₦{item.unitPrice?.toLocaleString()} × {item.quantity} = ₦{(item.unitPrice * item.quantity).toLocaleString()}
                                   </Typography>
                                 </Box>
                               ))
                             ) : order.config ? (
-                              <Box sx={{ p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
-                                <Typography variant="body2" fontWeight="bold" sx={{ textTransform: 'capitalize' }}>
+                              <Box sx={{ p: 2, bgcolor: 'background.paper', borderRadius: 1, borderLeft: '3px solid', borderColor: 'primary.main' }}>
+                                <Typography variant="body2" fontWeight="bold" sx={{ textTransform: 'capitalize', mb: 0.5 }}>
                                   {order.config.productType}
                                 </Typography>
-                                <Typography variant="caption" color="text.secondary">
-                                  {order.config.productType === 'cake' && (
-                                    `${order.config.size}" ${order.config.shape} • ${order.config.layers} layer(s) • ${order.config.flavor}`
-                                  )}
-                                  {(order.config.productType === 'cookies' || order.config.productType === 'muffins') && (
-                                    `Box of ${order.config.boxSize}`
-                                  )}
-                                </Typography>
+                                {order.config.productType === 'cake' && (
+                                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+                                    <Typography variant="caption" color="text.secondary">
+                                      <strong>Size:</strong> {order.config.size}" • <strong>Shape:</strong> {order.config.shape} • <strong>Layers:</strong> {order.config.layers}
+                                    </Typography>
+                                    {(order.config.flavors || []).length > 0
+                                      ? (order.config.flavors || []).map((f: string, li: number) => (
+                                        <Typography key={li} variant="caption" color="text.secondary">
+                                          <strong>Layer {li + 1} flavor:</strong> {f}
+                                        </Typography>
+                                      ))
+                                      : order.config.flavor && (
+                                        <Typography variant="caption" color="text.secondary">
+                                          <strong>Flavor:</strong> {order.config.flavor}
+                                        </Typography>
+                                      )
+                                    }
+                                    {order.config.filling && (
+                                      <Typography variant="caption" color="text.secondary">
+                                        <strong>Filling:</strong> {order.config.filling}
+                                      </Typography>
+                                    )}
+                                    {order.config.addons?.length > 0 && (
+                                      <Typography variant="caption" color="text.secondary">
+                                        <strong>Add-ons:</strong> {order.config.addons.join(', ')}
+                                      </Typography>
+                                    )}
+                                    {order.config.text && (
+                                      <Typography variant="caption" color="text.secondary">
+                                        <strong>Writing:</strong> "{order.config.text}"
+                                      </Typography>
+                                    )}
+                                  </Box>
+                                )}
+                                {(order.config.productType === 'cookies' || order.config.productType === 'muffins') && (
+                                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+                                    <Typography variant="caption" color="text.secondary">
+                                      <strong>Box size:</strong> {order.config.boxSize}
+                                    </Typography>
+                                    {order.config.boxFlavors?.length > 0 && (
+                                      <Typography variant="caption" color="text.secondary">
+                                        <strong>Flavors:</strong> {order.config.boxFlavors.join(', ')}
+                                      </Typography>
+                                    )}
+                                  </Box>
+                                )}
                               </Box>
                             ) : (
                               <Typography variant="body2">No items</Typography>
@@ -492,36 +568,112 @@ export default function AdminDashboard() {
                       </Typography>
                       {Array.isArray(order.items) ? (
                         order.items.map((item: any, idx: number) => (
-                          <Box key={idx} sx={{ mb: 1, p: 1.5, bgcolor: 'grey.50', borderRadius: 1 }}>
-                            <Typography variant="body2" fontWeight="bold" sx={{ textTransform: 'capitalize' }}>
+                          <Box key={idx} sx={{ mb: 1, p: 1.5, bgcolor: 'grey.50', borderRadius: 1, borderLeft: '3px solid', borderColor: 'primary.main' }}>
+                            <Typography variant="body2" fontWeight="bold" sx={{ textTransform: 'capitalize', mb: 0.5 }}>
                               {item.productType || 'Item'} (Qty: {item.quantity || 1})
                             </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              {item.productType === 'cake' && item.customization && (
-                                `${item.customization.size}" ${item.customization.shape} • ${item.customization.layers} layer(s) • ${item.customization.flavor}${item.customization.text ? ` • "${item.customization.text}"` : ''}`
-                              )}
-                              {(item.productType === 'cookies' || item.productType === 'muffins') && item.customization && (
-                                `Box of ${item.customization.boxSize} • ${item.customization.boxFlavors?.join(', ') || 'No flavors'}`
-                              )}
-                            </Typography>
-                            <Typography variant="body2">
-                              ₦{item.unitPrice} × {item.quantity} = ₦{(item.unitPrice * item.quantity).toLocaleString()}
+                            {item.productType === 'cake' && item.customization && (
+                              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+                                <Typography variant="caption" color="text.secondary">
+                                  <strong>Size:</strong> {item.customization.size}" • <strong>Shape:</strong> {item.customization.shape} • <strong>Layers:</strong> {item.customization.layers}
+                                </Typography>
+                                {(item.customization.flavors || []).length > 0
+                                  ? (item.customization.flavors || []).map((f: string, li: number) => (
+                                    <Typography key={li} variant="caption" color="text.secondary">
+                                      <strong>Layer {li + 1} flavor:</strong> {f}
+                                    </Typography>
+                                  ))
+                                  : item.customization.flavor && (
+                                    <Typography variant="caption" color="text.secondary">
+                                      <strong>Flavor:</strong> {item.customization.flavor}
+                                    </Typography>
+                                  )
+                                }
+                                {item.customization.filling && (
+                                  <Typography variant="caption" color="text.secondary">
+                                    <strong>Filling:</strong> {item.customization.filling}
+                                  </Typography>
+                                )}
+                                {item.customization.addons?.length > 0 && (
+                                  <Typography variant="caption" color="text.secondary">
+                                    <strong>Add-ons:</strong> {item.customization.addons.join(', ')}
+                                  </Typography>
+                                )}
+                                {item.customization.text && (
+                                  <Typography variant="caption" color="text.secondary">
+                                    <strong>Writing:</strong> "{item.customization.text}"
+                                  </Typography>
+                                )}
+                              </Box>
+                            )}
+                            {(item.productType === 'cookies' || item.productType === 'muffins') && item.customization && (
+                              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+                                <Typography variant="caption" color="text.secondary">
+                                  <strong>Box size:</strong> {item.customization.boxSize}
+                                </Typography>
+                                {item.customization.boxFlavors?.length > 0 && (
+                                  <Typography variant="caption" color="text.secondary">
+                                    <strong>Flavors:</strong> {item.customization.boxFlavors.join(', ')}
+                                  </Typography>
+                                )}
+                              </Box>
+                            )}
+                            <Typography variant="body2" sx={{ mt: 0.5, fontWeight: 600 }}>
+                              ₦{item.unitPrice?.toLocaleString()} × {item.quantity} = ₦{(item.unitPrice * item.quantity).toLocaleString()}
                             </Typography>
                           </Box>
                         ))
                       ) : order.config ? (
-                        <Box sx={{ p: 1.5, bgcolor: 'grey.50', borderRadius: 1 }}>
-                          <Typography variant="body2" fontWeight="bold" sx={{ textTransform: 'capitalize' }}>
+                        <Box sx={{ p: 1.5, bgcolor: 'grey.50', borderRadius: 1, borderLeft: '3px solid', borderColor: 'primary.main' }}>
+                          <Typography variant="body2" fontWeight="bold" sx={{ textTransform: 'capitalize', mb: 0.5 }}>
                             {order.config.productType}
                           </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {order.config.productType === 'cake' && (
-                              `${order.config.size}" ${order.config.shape} • ${order.config.layers} layer(s) • ${order.config.flavor}`
-                            )}
-                            {(order.config.productType === 'cookies' || order.config.productType === 'muffins') && (
-                              `Box of ${order.config.boxSize}`
-                            )}
-                          </Typography>
+                          {order.config.productType === 'cake' && (
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+                              <Typography variant="caption" color="text.secondary">
+                                <strong>Size:</strong> {order.config.size}" • <strong>Shape:</strong> {order.config.shape} • <strong>Layers:</strong> {order.config.layers}
+                              </Typography>
+                              {(order.config.flavors || []).length > 0
+                                ? (order.config.flavors || []).map((f: string, li: number) => (
+                                  <Typography key={li} variant="caption" color="text.secondary">
+                                    <strong>Layer {li + 1} flavor:</strong> {f}
+                                  </Typography>
+                                ))
+                                : order.config.flavor && (
+                                  <Typography variant="caption" color="text.secondary">
+                                    <strong>Flavor:</strong> {order.config.flavor}
+                                  </Typography>
+                                )
+                              }
+                              {order.config.filling && (
+                                <Typography variant="caption" color="text.secondary">
+                                  <strong>Filling:</strong> {order.config.filling}
+                                </Typography>
+                              )}
+                              {order.config.addons?.length > 0 && (
+                                <Typography variant="caption" color="text.secondary">
+                                  <strong>Add-ons:</strong> {order.config.addons.join(', ')}
+                                </Typography>
+                              )}
+                              {order.config.text && (
+                                <Typography variant="caption" color="text.secondary">
+                                  <strong>Writing:</strong> "{order.config.text}"
+                                </Typography>
+                              )}
+                            </Box>
+                          )}
+                          {(order.config.productType === 'cookies' || order.config.productType === 'muffins') && (
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+                              <Typography variant="caption" color="text.secondary">
+                                <strong>Box size:</strong> {order.config.boxSize}
+                              </Typography>
+                              {order.config.boxFlavors?.length > 0 && (
+                                <Typography variant="caption" color="text.secondary">
+                                  <strong>Flavors:</strong> {order.config.boxFlavors.join(', ')}
+                                </Typography>
+                              )}
+                            </Box>
+                          )}
                         </Box>
                       ) : (
                         <Typography variant="body2">No items</Typography>

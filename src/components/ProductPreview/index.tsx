@@ -13,7 +13,8 @@ interface ProductPreviewProps {
     productType: 'cake' | 'cookies' | 'muffins';
     size?: string;
     layers?: number;
-    flavor?: string;
+    flavors?: string[];
+    filling?: string;
     addons?: string[];
     text?: string;
     shape?: 'circle' | 'heart';
@@ -41,7 +42,7 @@ export default function ProductPreview({ config: configProp }: ProductPreviewPro
 
   // Build label text
   const label = config.productType === 'cake'
-    ? `${config.size || 'Custom'}" ${config.flavor || 'Cake'}`
+    ? `${config.size || 'Custom'}" ${(config.flavors || [])[0] || 'Cake'}`
     : config.productType === 'cookies'
     ? `${config.boxSize || 'Custom'} Cookies`
     : config.productType === 'muffins'

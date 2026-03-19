@@ -5,9 +5,7 @@
 // Data Structures: Uses arrays for options, React state/context, and objects for configuration.
 // Security: Limits input length for text, disables invalid options, and uses controlled components to prevent unsafe input.
 
-// Import React and useEffect for component logic and side effects.
 import React, { useEffect } from 'react';
-// Import MUI components for enhanced UI
 import {
   Box,
   Typography,
@@ -27,7 +25,6 @@ import {
   Alert,
   Slider,
   Card,
-  CardContent,
 } from '@mui/material';
 import {
   Cake,
@@ -36,84 +33,81 @@ import {
   Palette,
   TextFields,
 } from '@mui/icons-material';
-// Import useConfig hook to access and update global cake configuration state.
 import { useConfig } from '../context/ConfigContext';
-// Import calculatePrice utility to compute the price based on configuration.
 import { calculatePrice } from '../utils/priceCalculator';
 
-// Define available cake sizes as an array of strings.
-const SIZES = ['8', '10', '12', 'Bento'];
-// Define available cake flavors as an array of strings.
-const FLAVORS = ['vanilla', 'chocolate', 'strawberry', 'red velvet'];
-// Define available add-ons as an array of strings.
-const ADDONS = ['fruit', 'text', 'filling'];
-// Define available product types
+const SIZES = ['6', '8', '10', '12', 'Bento'];
+const FLAVORS = [
+  'vanilla', 'chocolate', 'red velvet',
+  'biscoff', 'carrot', 'lemon', 'coconut',
+  'mocha', 'confetti', 'lemon and blueberry',
+];
+const FILLING_OPTIONS = [
+  'caramel', 'lemon curd', 'fresh strawberries', 'fresh blueberries',
+  'nutella', 'strawberry puree', 'dulce de leche',
+  'cream cheese', 'biscoff filling',
+];
+const ADDONS = [
+  'butterflies', 'light glitter', 'heavy glitter',
+  'light pearl detailing', 'heavy pearl detailing', 'other ornaments',
+];
 const PRODUCT_TYPES = ['cake', 'cookies', 'muffins'] as const;
-// Define available shapes for cakes
 const SHAPES = ['circle', 'heart'] as const;
-// Define available box sizes for cookies/muffins
 const BOX_SIZES = [4, 6, 12] as const;
-// Define available flavors for cookies/muffins
 const COOKIE_MUFFIN_FLAVORS = ['chocolate chip', 'red velvet', 'vanilla', 'oatmeal', 'peanut butter'];
 
-// CakeCustomizer component provides the UI for customizing a cake order.
+const ADDON_PRICE_LABELS: Record<string, string> = {
+  butterflies: '+₦2,000',
+  'light glitter': '+₦2,000',
+  'heavy glitter': '+₦5,000',
+  'light pearl detailing': '+₦2,500',
+  'heavy pearl detailing': '+₦5,000',
+  'other ornaments': 'price varies',
+};
+
 export default function CakeCustomizer() {
-  // Get current config and updater from context.
   const { config, setConfig } = useConfig();
-  // Updated: Added stepper state for better UX flow
   const [activeStep, setActiveStep] = React.useState(0);
 
-  // useEffect: Recalculate price whenever relevant config fields change.
   useEffect(() => {
-    const newPrice = calculatePrice(config); // Calculate new price.
+    const newPrice = calculatePrice(config);
     if (newPrice !== config.price) {
-      setConfig({ ...config, price: newPrice }); // Update config with new price.
+      setConfig({ ...config, price: newPrice });
     }
-  }, [config.size, config.layers, config.flavor, config.addons, config.boxSize, config.boxFlavors, config.productType, config.price, setConfig]);
+  }, [config.size, config.layers, config.flavors, config.filling, config.addons, config.boxSize, config.boxFlavors, config.productType, config.price, setConfig]);
 
-  // Updated: Enhanced to handle stepper navigation
-  const handleNext = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
-  };
+  const handleNext = () => setActiveStep(s => s + 1);
+  const handleBack = () => setActiveStep(s => s - 1);
 
-  const handleBack = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep - 1);
-  };
-
-  // Updated: Get stepper steps based on product type
   const getSteps = () => {
     if (config.productType === 'cake') {
       return ['Product Type', 'Shape & Size', 'Layers & Flavor', 'Add-ons & Text'];
-    } else {
-      return ['Product Type', 'Box Size', 'Flavors'];
     }
+    return ['Product Type', 'Box Size', 'Flavors'];
   };
-
   const steps = getSteps();
 
-  // Handle size selection. If switching to Bento, force layers to 1.
   const handleSizeChange = (size: string) => {
     if (size === 'Bento' && (config.layers || 1) > 1) {
-      setConfig({ ...config, size, layers: 1 });
+      setConfig({ ...config, size, layers: 1, flavors: (config.flavors || []).slice(0, 1) });
     } else {
       setConfig({ ...config, size });
     }
   };
 
-  // Handle layer selection. Prevent multiple layers for Bento size.
-  const handleLayersChange = (layers: number) => {
-    if (config.size === 'Bento' && layers > 1) {
-      return;
-    }
-    setConfig({ ...config, layers });
+  // When layers change, trim or pad flavors array accordingly
+  const handleLayersChange = (newLayers: number) => {
+    if (config.size === 'Bento' && newLayers > 1) return;
+    const trimmed = (config.flavors || []).slice(0, newLayers);
+    setConfig({ ...config, layers: newLayers, flavors: trimmed, filling: newLayers < 2 ? undefined : config.filling });
   };
 
-  // Handle flavor selection.
-  const handleFlavorChange = (flavor: string) => {
-    setConfig({ ...config, flavor });
+  const handleFlavorChange = (layerIndex: number, flavor: string) => {
+    const newFlavors = [...(config.flavors || [])];
+    newFlavors[layerIndex] = flavor;
+    setConfig({ ...config, flavors: newFlavors });
   };
 
-  // Handle add-on selection (toggle in array).
   const handleAddonChange = (addon: string) => {
     const currentAddons = config.addons || [];
     const newAddons = currentAddons.includes(addon)
@@ -122,23 +116,19 @@ export default function CakeCustomizer() {
     setConfig({ ...config, addons: newAddons });
   };
 
-  // Handle custom text input, limit to 40 characters.
   const handleTextChange = (text: string) => {
-    if (text.length <= 40) {
-      setConfig({ ...config, text });
-    }
+    if (text.length <= 40) setConfig({ ...config, text });
   };
 
-  // Handle product type selection
   const handleProductTypeChange = (type: 'cake' | 'cookies' | 'muffins') => {
-    // Reset config fields not relevant to the selected product
     if (type === 'cake') {
       setConfig({
         ...config,
         productType: type,
         size: '',
         layers: 1,
-        flavor: '',
+        flavors: [],
+        filling: undefined,
         addons: [],
         text: '',
         shape: 'circle',
@@ -152,7 +142,8 @@ export default function CakeCustomizer() {
         productType: type,
         size: undefined,
         layers: undefined,
-        flavor: undefined,
+        flavors: [],
+        filling: undefined,
         addons: [],
         text: '',
         shape: undefined,
@@ -163,17 +154,14 @@ export default function CakeCustomizer() {
     }
   };
 
-  // Add shape selection for cakes
   const handleShapeChange = (shape: 'circle' | 'heart') => {
     setConfig({ ...config, shape });
   };
 
-  // Box size selection for cookies/muffins
   const handleBoxSizeChange = (boxSize: 4 | 6 | 12) => {
-    setConfig({ ...config, boxSize, boxFlavors: [] }); // Reset flavors on box size change
+    setConfig({ ...config, boxSize, boxFlavors: [] });
   };
 
-  // Box flavor selection for cookies/muffins (max 2 flavors)
   const handleBoxFlavorChange = (flavor: string) => {
     const current = config.boxFlavors || [];
     if (current.includes(flavor)) {
@@ -183,11 +171,11 @@ export default function CakeCustomizer() {
     }
   };
 
-  // Render the customization UI - Updated: Enhanced with MUI Stepper and improved layout.
+  const layers = config.layers || 1;
+
   return (
     <Box sx={{ maxWidth: 800, mx: 'auto', p: { xs: 2, md: 3 } }}>
       <Paper elevation={2} sx={{ p: { xs: 2, md: 4 }, borderRadius: 3 }}>
-        {/* Header Section - New: Added visual header with icon */}
         <Box sx={{ textAlign: 'center', mb: 4 }}>
           <Cake sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
           <Typography variant="h4" component="h1" gutterBottom>
@@ -198,7 +186,6 @@ export default function CakeCustomizer() {
           </Typography>
         </Box>
 
-        {/* Stepper - New: Added visual progress indicator */}
         <Stepper activeStep={activeStep} orientation="vertical" sx={{ mb: 4 }}>
           {steps.map((label, index) => (
             <Step key={label}>
@@ -207,9 +194,7 @@ export default function CakeCustomizer() {
                 {/* Product Type Step */}
                 {index === 0 && (
                   <Card variant="outlined" sx={{ p: 3, mb: 2 }}>
-                    <Typography variant="h6" gutterBottom>
-                      Choose Product Type
-                    </Typography>
+                    <Typography variant="h6" gutterBottom>Choose Product Type</Typography>
                     <ToggleButtonGroup
                       value={config.productType}
                       exclusive
@@ -222,24 +207,19 @@ export default function CakeCustomizer() {
                           key={type}
                           value={type}
                           sx={{
-                            flex: 1,
-                            minWidth: 0,
+                            flex: 1, minWidth: 0,
                             py: { xs: 1.2, md: 1.5 },
                             fontSize: { xs: '0.85rem', md: '1rem' },
                             borderRadius: 2,
                             '&.Mui-selected': {
                               backgroundColor: 'primary.main',
                               color: 'primary.contrastText',
-                              '&:hover': {
-                                backgroundColor: 'primary.dark',
-                              }
-                            }
+                              '&:hover': { backgroundColor: 'primary.dark' },
+                            },
                           }}
                         >
                           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-                            {type === 'cake' && <Cake />}
-                            {type === 'cookies' && <Cookie />}
-                            {type === 'muffins' && <Cookie />}
+                            {type === 'cake' ? <Cake /> : <Cookie />}
                             <Typography variant="body2">
                               {type.charAt(0).toUpperCase() + type.slice(1)}
                             </Typography>
@@ -253,11 +233,8 @@ export default function CakeCustomizer() {
                 {/* Cake Shape & Size Step */}
                 {index === 1 && config.productType === 'cake' && (
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                    {/* Shape Selection - Updated: Enhanced with visual toggle buttons */}
                     <Card variant="outlined" sx={{ p: 3 }}>
-                      <Typography variant="h6" gutterBottom>
-                        Shape
-                      </Typography>
+                      <Typography variant="h6" gutterBottom>Shape</Typography>
                       <ToggleButtonGroup
                         value={config.shape}
                         exclusive
@@ -269,13 +246,8 @@ export default function CakeCustomizer() {
                             key={shape}
                             value={shape}
                             sx={{
-                              flex: 1,
-                              py: 2,
-                              borderRadius: 2,
-                              '&.Mui-selected': {
-                                backgroundColor: 'primary.main',
-                                color: 'primary.contrastText'
-                              }
+                              flex: 1, py: 2, borderRadius: 2,
+                              '&.Mui-selected': { backgroundColor: 'primary.main', color: 'primary.contrastText' },
                             }}
                           >
                             {shape.charAt(0).toUpperCase() + shape.slice(1)}
@@ -284,16 +256,13 @@ export default function CakeCustomizer() {
                       </ToggleButtonGroup>
                     </Card>
 
-                    {/* Size Selection - Updated: Enhanced with chips */}
                     <Card variant="outlined" sx={{ p: 3 }}>
-                      <Typography variant="h6" gutterBottom>
-                        Size
-                      </Typography>
+                      <Typography variant="h6" gutterBottom>Size</Typography>
                       <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                         {SIZES.map(size => (
                           <Chip
                             key={size}
-                            label={`${size}"`}
+                            label={size === 'Bento' ? 'Bento' : `${size}"`}
                             onClick={() => handleSizeChange(size)}
                             color={config.size === size ? 'primary' : 'default'}
                             variant={config.size === size ? 'filled' : 'outlined'}
@@ -308,7 +277,6 @@ export default function CakeCustomizer() {
                 {/* Cake Layers & Flavor Step */}
                 {index === 2 && config.productType === 'cake' && (
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                    {/* Layers Selection - Updated: Enhanced with slider and visual feedback */}
                     <Card variant="outlined" sx={{ p: 3 }}>
                       <Typography variant="h6" gutterBottom>
                         <Layers sx={{ mr: 1, verticalAlign: 'middle' }} />
@@ -316,7 +284,7 @@ export default function CakeCustomizer() {
                       </Typography>
                       <Box sx={{ px: 2 }}>
                         <Slider
-                          value={config.layers || 1}
+                          value={layers}
                           onChange={(_, value) => handleLayersChange(value as number)}
                           min={1}
                           max={config.size === 'Bento' ? 1 : 3}
@@ -326,7 +294,7 @@ export default function CakeCustomizer() {
                           disabled={config.size === 'Bento'}
                         />
                         <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                          {config.layers || 1} Layer{(config.layers || 1) > 1 ? 's' : ''}
+                          {layers} Layer{layers > 1 ? 's' : ''}
                         </Typography>
                         {config.size === 'Bento' && (
                           <Alert severity="info" sx={{ mt: 2 }}>
@@ -336,37 +304,80 @@ export default function CakeCustomizer() {
                       </Box>
                     </Card>
 
-                    {/* Flavor Selection - Updated: Enhanced with visual grid */}
-                    <Card variant="outlined" sx={{ p: 3 }}>
-                      <Typography variant="h6" gutterBottom>
-                        <Palette sx={{ mr: 1, verticalAlign: 'middle' }} />
-                        Flavor
-                      </Typography>
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                        {FLAVORS.map(flavor => (
-                          <Button
-                            key={flavor}
-                            fullWidth
-                            variant={config.flavor === flavor ? 'contained' : 'outlined'}
-                            onClick={() => handleFlavorChange(flavor)}
-                            sx={{ py: { xs: 1, md: 1.5 }, borderRadius: 2, flex: '1 1 45%', fontSize: { xs: '0.8rem', md: '0.95rem' } }}
-                          >
-                            {flavor.charAt(0).toUpperCase() + flavor.slice(1)}
-                          </Button>
-                        ))}
-                      </Box>
-                    </Card>
+                    {/* Per-layer flavor selection */}
+                    {Array.from({ length: layers }).map((_, i) => (
+                      <Card key={i} variant="outlined" sx={{ p: 3 }}>
+                        <Typography variant="h6" gutterBottom>
+                          <Palette sx={{ mr: 1, verticalAlign: 'middle' }} />
+                          Layer {i + 1} Flavor
+                          {i > 0 && (config.flavors?.[i] === config.flavors?.[0]) && (
+                            <Chip label="same as layer 1" size="small" sx={{ ml: 1 }} />
+                          )}
+                        </Typography>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                          {FLAVORS.map(flavor => {
+                            const upcharge = flavor === 'biscoff' ? '+₦5,000'
+                              : flavor === 'confetti' ? '+₦3,000'
+                              : flavor === 'lemon and blueberry' ? '+₦5,000'
+                              : ['carrot','lemon','coconut','mocha'].includes(flavor) ? '+₦2,000'
+                              : null;
+                            return (
+                              <Button
+                                key={flavor}
+                                variant={config.flavors?.[i] === flavor ? 'contained' : 'outlined'}
+                                onClick={() => handleFlavorChange(i, flavor)}
+                                sx={{ borderRadius: 2, textTransform: 'capitalize', fontSize: { xs: '0.8rem', md: '0.875rem' } }}
+                              >
+                                {flavor}
+                                {upcharge && (
+                                  <Typography component="span" variant="caption" sx={{ ml: 0.5, opacity: 0.8 }}>
+                                    {upcharge}
+                                  </Typography>
+                                )}
+                              </Button>
+                            );
+                          })}
+                        </Box>
+                      </Card>
+                    ))}
+
+                    {/* Filling selector for 2+ layers */}
+                    {layers >= 2 && (
+                      <Card variant="outlined" sx={{ p: 3 }}>
+                        <Typography variant="h6" gutterBottom>
+                          Filling{' '}
+                          <Chip
+                            label={layers === 2 ? '+₦3,000 base' : '+₦5,000 base'}
+                            size="small"
+                            color="primary"
+                            variant="outlined"
+                          />
+                        </Typography>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                          {FILLING_OPTIONS.map(f => {
+                            const extra = f === 'cream cheese' || f === 'biscoff filling' ? ' (+₦3,000)' : '';
+                            return (
+                              <Button
+                                key={f}
+                                variant={config.filling === f ? 'contained' : 'outlined'}
+                                onClick={() => setConfig({ ...config, filling: config.filling === f ? undefined : f })}
+                                sx={{ borderRadius: 2, textTransform: 'capitalize', fontSize: { xs: '0.8rem', md: '0.875rem' } }}
+                              >
+                                {f}{extra}
+                              </Button>
+                            );
+                          })}
+                        </Box>
+                      </Card>
+                    )}
                   </Box>
                 )}
 
                 {/* Cake Add-ons & Text Step */}
                 {index === 3 && config.productType === 'cake' && (
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                    {/* Add-ons Selection - Updated: Enhanced with FormGroup */}
                     <Card variant="outlined" sx={{ p: 3 }}>
-                      <Typography variant="h6" gutterBottom>
-                        Add-ons
-                      </Typography>
+                      <Typography variant="h6" gutterBottom>Add-ons</Typography>
                       <FormGroup>
                         {ADDONS.map(addon => (
                           <FormControlLabel
@@ -378,13 +389,17 @@ export default function CakeCustomizer() {
                                 color="primary"
                               />
                             }
-                            label={addon.charAt(0).toUpperCase() + addon.slice(1)}
+                            label={
+                              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                <span style={{ textTransform: 'capitalize' }}>{addon}</span>
+                                <Chip label={ADDON_PRICE_LABELS[addon]} size="small" variant="outlined" />
+                              </Box>
+                            }
                           />
                         ))}
                       </FormGroup>
                     </Card>
 
-                    {/* Text Input - Updated: Enhanced with TextField */}
                     <Card variant="outlined" sx={{ p: 3 }}>
                       <Typography variant="h6" gutterBottom>
                         <TextFields sx={{ mr: 1, verticalAlign: 'middle' }} />
@@ -406,9 +421,7 @@ export default function CakeCustomizer() {
                 {/* Cookies/Muffins Box Size Step */}
                 {index === 1 && (config.productType === 'cookies' || config.productType === 'muffins') && (
                   <Card variant="outlined" sx={{ p: 3, mb: 2 }}>
-                    <Typography variant="h6" gutterBottom>
-                      Box Size
-                    </Typography>
+                    <Typography variant="h6" gutterBottom>Box Size</Typography>
                     <ToggleButtonGroup
                       value={config.boxSize}
                       exclusive
@@ -420,13 +433,8 @@ export default function CakeCustomizer() {
                           key={size}
                           value={size}
                           sx={{
-                            flex: 1,
-                            py: 2,
-                            borderRadius: 2,
-                            '&.Mui-selected': {
-                              backgroundColor: 'primary.main',
-                              color: 'primary.contrastText'
-                            }
+                            flex: 1, py: 2, borderRadius: 2,
+                            '&.Mui-selected': { backgroundColor: 'primary.main', color: 'primary.contrastText' },
                           }}
                         >
                           Box of {size}
@@ -439,9 +447,7 @@ export default function CakeCustomizer() {
                 {/* Cookies/Muffins Flavors Step */}
                 {index === 2 && (config.productType === 'cookies' || config.productType === 'muffins') && (
                   <Card variant="outlined" sx={{ p: 3, mb: 2 }}>
-                    <Typography variant="h6" gutterBottom>
-                      Flavors (Choose up to 2)
-                    </Typography>
+                    <Typography variant="h6" gutterBottom>Flavors (Choose up to 2)</Typography>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
                       {COOKIE_MUFFIN_FLAVORS.map(flavor => (
                         <Button
@@ -449,7 +455,7 @@ export default function CakeCustomizer() {
                           variant={config.boxFlavors?.includes(flavor) ? 'contained' : 'outlined'}
                           onClick={() => handleBoxFlavorChange(flavor)}
                           disabled={config.boxFlavors && config.boxFlavors.length >= 2 && !config.boxFlavors.includes(flavor)}
-                          sx={{ py: { xs: 1, md: 1.5 }, borderRadius: 2, flex: '1 1 45%', fontSize: { xs: '0.8rem', md: '0.95rem' } }}
+                          sx={{ borderRadius: 2, flex: '1 1 45%', fontSize: { xs: '0.8rem', md: '0.95rem' } }}
                         >
                           {flavor.charAt(0).toUpperCase() + flavor.slice(1)}
                         </Button>
@@ -461,13 +467,9 @@ export default function CakeCustomizer() {
                   </Card>
                 )}
 
-                {/* Navigation Buttons - New: Added stepper navigation */}
+                {/* Navigation */}
                 <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
-                  <Button
-                    disabled={activeStep === 0}
-                    onClick={handleBack}
-                    variant="outlined"
-                  >
+                  <Button disabled={activeStep === 0} onClick={handleBack} variant="outlined">
                     Back
                   </Button>
                   <Button
