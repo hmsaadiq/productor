@@ -105,6 +105,7 @@ yarn.lock
 
 # Supabase
 .supabase/
+supabase/
 
 # Claude Code
 .claude/
