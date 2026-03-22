@@ -40,6 +40,8 @@ import AdminDashboard from './pages/AdminDashboard';
 import Footer from './components/Footer';
 import ProfilePage from './pages/ProfilePage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import { SpeedInsights } from '@vercel/speed-insights/react';
+import { Analytics } from '@vercel/analytics/react';
 
 // Footer wrapper — hides footer on pages where it should not appear.
 function ConditionalFooter() {
@@ -129,6 +131,8 @@ function App() {
             onClose={() => setIsLoginModalOpen(false)}
           />
           <ConditionalFooter />
+          <SpeedInsights />
+          <Analytics />
         </Box>
         </Router>
         </CartProvider>
