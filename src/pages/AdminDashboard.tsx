@@ -287,7 +287,7 @@ export default function AdminDashboard() {
                   </TableRow>
                   {expandedOrder === order.id && (
                     <TableRow>
-                      <TableCell colSpan={9} sx={{ bgcolor: 'grey.50', p: 3 }}>
+                      <TableCell colSpan={9} sx={{ bgcolor: 'background.default', p: 3 }}>
                         {/* Cancellation Info */}
                         {order.status === 'cancelled' && order.cancelled_at && (
                           <Box sx={{ mb: 3, p: 2, border: 2, borderColor: 'error.main', bgcolor: 'background.paper', borderRadius: 1 }}>
@@ -568,7 +568,7 @@ export default function AdminDashboard() {
                       </Typography>
                       {Array.isArray(order.items) ? (
                         order.items.map((item: any, idx: number) => (
-                          <Box key={idx} sx={{ mb: 1, p: 1.5, bgcolor: 'grey.50', borderRadius: 1, borderLeft: '3px solid', borderColor: 'primary.main' }}>
+                          <Box key={idx} sx={{ mb: 1, p: 1.5, bgcolor: 'background.default', borderRadius: 1, borderLeft: '3px solid', borderColor: 'primary.main' }}>
                             <Typography variant="body2" fontWeight="bold" sx={{ textTransform: 'capitalize', mb: 0.5 }}>
                               {item.productType || 'Item'} (Qty: {item.quantity || 1})
                             </Typography>
@@ -624,7 +624,7 @@ export default function AdminDashboard() {
                           </Box>
                         ))
                       ) : order.config ? (
-                        <Box sx={{ p: 1.5, bgcolor: 'grey.50', borderRadius: 1, borderLeft: '3px solid', borderColor: 'primary.main' }}>
+                        <Box sx={{ p: 1.5, bgcolor: 'background.default', borderRadius: 1, borderLeft: '3px solid', borderColor: 'primary.main' }}>
                           <Typography variant="body2" fontWeight="bold" sx={{ textTransform: 'capitalize', mb: 0.5 }}>
                             {order.config.productType}
                           </Typography>
@@ -687,7 +687,7 @@ export default function AdminDashboard() {
                       <Typography variant="body2" fontWeight="bold" gutterBottom>
                         Delivery Address
                       </Typography>
-                      <Box sx={{ p: 1.5, bgcolor: 'grey.50', borderRadius: 1 }}>
+                      <Box sx={{ p: 1.5, bgcolor: 'background.default', borderRadius: 1 }}>
                         {order.shipping_address ? (
                           <>
                             <Typography variant="body2"><strong>Name:</strong> {order.shipping_address.name}</Typography>

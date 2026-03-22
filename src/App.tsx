@@ -7,8 +7,9 @@
 
 // Import React and useState for component logic and state management.
 import React, { useState, useMemo } from 'react';
+import Box from '@mui/material/Box';
 // Import React Router for client-side routing (SPA navigation).
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 // Import MUI ThemeProvider and CssBaseline for Material-UI theming
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -35,6 +36,16 @@ import LoginModal from './components/LoginModal';
 import DeliveryDetailsPage from './pages/DeliveryDetailsPage';
 // Import AdminDashboard
 import AdminDashboard from './pages/AdminDashboard';
+// Import Footer
+import Footer from './components/Footer';
+
+// Footer wrapper — hides footer on pages where it should not appear.
+function ConditionalFooter() {
+  const location = useLocation();
+  const hideOn = ['/customize', '/admin'];
+  if (hideOn.includes(location.pathname)) return null;
+  return <Footer />;
+}
 
 // The main App component sets up context, routing, and layout for the entire frontend.
 function App() {
@@ -65,7 +76,7 @@ function App() {
         {/* Set up the React Router for SPA navigation. */}
         <Router>
         {/* Main app container with background styling. */}
-        <div style={{ minHeight: '100vh', paddingTop: 80 }}>
+        <Box sx={{ minHeight: '100vh', paddingTop: { xs: '66px', md: '80px' } }}>
           {/* Header is always visible and contains navigation and sign-in/out controls. */}
           <Header onSignInClick={() => setIsLoginModalOpen(true)} mode={mode} onToggleMode={toggleMode} />
           {/* Define the main routes for the app. */}
@@ -104,7 +115,8 @@ function App() {
             isOpen={isLoginModalOpen}
             onClose={() => setIsLoginModalOpen(false)}
           />
-        </div>
+          <ConditionalFooter />
+        </Box>
         </Router>
         </CartProvider>
       </ConfigProvider>

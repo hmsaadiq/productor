@@ -73,7 +73,7 @@ export default function ConfirmationPage() {
 
   // Render the confirmation UI - Updated: Enhanced with MUI components and better layout.
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50', py: 4 }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', py: 4 }}>
       <Container maxWidth="lg">
         {/* Success Header - Updated: Enhanced with MUI styling */}
         <Box sx={{ textAlign: 'center', mb: 6 }}>

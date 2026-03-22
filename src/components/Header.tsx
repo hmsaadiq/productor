@@ -34,9 +34,11 @@ export default function Header({ onSignInClick, mode, onToggleMode }: HeaderProp
   const handleSignOut = async () => {
     try {
       await signOut();
-      setUser(null);
     } catch (error) {
       console.error('Error signing out:', error);
+    } finally {
+      // Always clear local user state regardless of server response.
+      setUser(null);
     }
   };
 

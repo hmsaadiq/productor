@@ -18,12 +18,12 @@ export function createAppTheme(mode: PaletteMode) {
         light: isLight ? '#b8956b' : '#e0c090',
       },
       background: {
-        default: isLight ? '#f8f6f6' : '#0f0f0f',
-        paper: isLight ? '#ffffff' : '#1a1a1a',
+        default: isLight ? '#f8f6f6' : '#221015',
+        paper: isLight ? '#ffffff' : '#2d161c',
       },
       text: {
         primary: isLight ? '#1b0d11' : '#f5f0f1',
-        secondary: isLight ? '#9a794c' : 'rgba(255,255,255,0.65)',
+        secondary: isLight ? '#9a794c' : 'rgba(245,240,241,0.65)',
       },
       grey: isLight
         ? {
@@ -50,7 +50,7 @@ export function createAppTheme(mode: PaletteMode) {
             800: '#f3e7ea',
             900: '#fcf8f9',
           },
-      divider: isLight ? 'rgba(243, 231, 234, 0.5)' : 'rgba(255, 255, 255, 0.08)',
+      divider: isLight ? '#f3e7ea' : '#48232c',
     },
     typography: {
       fontFamily: '"Epilogue", "Roboto", "Helvetica", "Arial", sans-serif',
@@ -123,13 +123,13 @@ export function createAppTheme(mode: PaletteMode) {
         styleOverrides: {
           root: {
             borderRadius: 16,
-            backgroundColor: isLight ? undefined : '#242424',
+            backgroundColor: isLight ? undefined : '#2d161c',
             boxShadow: isLight
               ? '0 4px 20px -2px rgba(27, 13, 17, 0.05)'
-              : '0 4px 20px -2px rgba(0, 0, 0, 0.3)',
+              : '0 4px 20px -2px rgba(0, 0, 0, 0.4)',
             border: isLight
-              ? '1px solid rgba(243, 231, 234, 0.5)'
-              : '1px solid rgba(255, 255, 255, 0.08)',
+              ? '1px solid #f3e7ea'
+              : '1px solid #48232c',
             '&:hover': {
               transform: 'translateY(-2px)',
               boxShadow: isLight
@@ -145,7 +145,7 @@ export function createAppTheme(mode: PaletteMode) {
           root: {
             '& .MuiOutlinedInput-root': {
               borderRadius: 12,
-              backgroundColor: isLight ? '#fcf8f9' : '#2a2a2a',
+              backgroundColor: isLight ? '#fcf8f9' : '#391c23',
               '&:hover .MuiOutlinedInput-notchedOutline': {
                 borderColor: '#ef3966',
               },

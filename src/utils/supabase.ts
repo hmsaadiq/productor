@@ -20,53 +20,39 @@ if (!supabaseUrl || !supabaseAnonKey) {
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Sign in with Google using Supabase Auth.
+// Uses the OAuth redirect flow — after calling this the browser navigates to Google,
+// so there is no session to read back immediately. The session is established on return.
 export const signInWithGoogle = async () => {
-  try {
-    console.log('Starting Google sign-in process...');
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/`,
-      },
-    });
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${window.location.origin}/`,
+    },
+  });
 
-    if (error) {
-      console.error('Error signing in with Google:', error);
-      throw error;
-    }
-
-    // Wait for the session to be established
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user) {
-      console.log('Sign-in successful:', session.user.email);
-      return session.user;
-    }
-    
-    // If no session yet, return the user from the auth state
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      return user;
-    }
-
-    throw new Error('Sign-in initiated but session not established');
-  } catch (error) {
-    console.error('Error signing in with Google:', error);
+  if (error) {
+    console.error('Error initiating Google sign-in:', error);
     throw error;
   }
+  // Browser is now redirecting to Google — nothing more to do here.
 };
 
 // Sign out the current user.
+// Uses scope:'local' so it only clears the browser session without needing a valid
+// server token — prevents the 403 that occurs when the session has already expired.
 export const signOut = async () => {
   try {
-    console.log('Starting sign-out process...');
-    const { error } = await supabase.auth.signOut();
-    if (error) {
+    const { error } = await supabase.auth.signOut({ scope: 'local' });
+    // AuthSessionMissingError means the session was already gone — treat as success.
+    if (error && error.name !== 'AuthSessionMissingError') {
       throw error;
     }
-    console.log('Sign-out successful');
-  } catch (error) {
-    console.error('Error signing out:', error);
-    throw error;
+  } catch (error: any) {
+    if (error?.name !== 'AuthSessionMissingError') {
+      console.error('Error signing out:', error);
+      throw error;
+    }
+    // Session was already cleared — silently succeed.
   }
 };
 

@@ -186,9 +186,9 @@ const CardNav: React.FC<CardNavProps> = ({
         ref={navRef}
         className={`card-nav ${isExpanded ? 'open' : ''}`}
         style={mode === 'dark' ? {
-          backgroundColor: 'rgba(30, 30, 30, 0.95)',
-          borderColor: 'rgba(255, 255, 255, 0.06)',
-          boxShadow: '0 4px 20px -2px rgba(0, 0, 0, 0.3)',
+          backgroundColor: 'rgba(34, 16, 21, 0.88)',
+          borderColor: '#48232c',
+          boxShadow: '0 4px 24px -2px rgba(0, 0, 0, 0.45)',
           color: '#f5f0f1',
         } : undefined}
       >

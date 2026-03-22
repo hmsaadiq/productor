@@ -1,6 +1,6 @@
 .card-nav-container {
   position: fixed;
-  top: 1.2em;
+  top: 1em;
   left: 50%;
   transform: translateX(-50%);
   width: 92%;
@@ -11,7 +11,7 @@
 
 .card-nav {
   display: block;
-  height: 60px;
+  height: 56px;
   padding: 0;
   color: #1b0d11;
   background-color: rgba(248, 246, 246, 0.95);
@@ -31,11 +31,11 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 60px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.5rem 0.45rem 0.55rem 1.1rem;
+  padding: 0 0.5rem 0 1rem;
   z-index: 2;
 }
 
@@ -47,7 +47,9 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  gap: 6px;
+  gap: 5px;
+  padding: 0 6px;
+  flex-shrink: 0;
 }
 
 .hamburger-menu:hover .hamburger-line {
@@ -55,7 +57,7 @@
 }
 
 .hamburger-line {
-  width: 26px;
+  width: 22px;
   height: 2px;
   background-color: currentColor;
   transition:
@@ -66,18 +68,18 @@
 }
 
 .hamburger-menu.open .hamburger-line:first-child {
-  transform: translateY(4px) rotate(45deg);
+  transform: translateY(3.5px) rotate(45deg);
 }
 
 .hamburger-menu.open .hamburger-line:last-child {
-  transform: translateY(-4px) rotate(-45deg);
+  transform: translateY(-3.5px) rotate(-45deg);
 }
 
 /* Logo */
 .logo-container {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   position: absolute;
   left: 50%;
   top: 50%;
@@ -87,14 +89,14 @@
 }
 
 .logo-container .logo-icon {
-  font-size: 28px;
+  font-size: 24px;
   color: #ef3966;
 }
 
 .logo-container .logo-text {
   font-family: 'Epilogue', sans-serif;
   font-weight: 700;
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   letter-spacing: -0.015em;
   color: #1b0d11;
 }
@@ -103,8 +105,9 @@
 .card-nav-actions {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 2px;
   height: 100%;
+  flex-shrink: 0;
 }
 
 .card-nav-cta-button {
@@ -112,8 +115,8 @@
   color: white;
   border: none;
   border-radius: calc(0.75rem - 0.35rem);
-  padding: 0 1rem;
-  height: 100%;
+  padding: 0 0.875rem;
+  height: 36px;
   font-family: 'Epilogue', sans-serif;
   font-weight: 600;
   font-size: 0.875rem;
@@ -121,7 +124,8 @@
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
+  white-space: nowrap;
 }
 
 .card-nav-cta-button:hover {
@@ -136,7 +140,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px;
+  padding: 7px;
   border-radius: 50%;
   transition: background-color 0.2s ease, color 0.2s ease;
   color: inherit;
@@ -153,10 +157,10 @@
   right: 2px;
   background-color: #ef3966;
   color: white;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
-  min-width: 16px;
-  height: 16px;
+  min-width: 15px;
+  height: 15px;
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -169,12 +173,12 @@
   position: absolute;
   left: 0;
   right: 0;
-  top: 60px;
+  top: 56px;
   bottom: 0;
   padding: 0.5rem;
   display: flex;
   align-items: flex-end;
-  gap: 12px;
+  gap: 10px;
   visibility: hidden;
   pointer-events: none;
   z-index: 1;
@@ -194,35 +198,35 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  padding: 14px 16px;
-  gap: 8px;
+  padding: 12px 14px;
+  gap: 6px;
   user-select: none;
 }
 
 .nav-card-label {
   font-family: 'Epilogue', sans-serif;
-  font-weight: 500;
-  font-size: 20px;
-  letter-spacing: -0.5px;
+  font-weight: 600;
+  font-size: 17px;
+  letter-spacing: -0.4px;
 }
 
 .nav-card-links {
   margin-top: auto;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
 .nav-card-link {
   font-family: 'Epilogue', sans-serif;
-  font-size: 15px;
+  font-size: 14px;
   cursor: pointer;
   text-decoration: none;
   color: inherit;
   transition: opacity 0.3s ease;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   background: none;
   border: none;
   padding: 2px 0;
@@ -233,7 +237,7 @@
 }
 
 .nav-card-link-icon {
-  font-size: 16px;
+  font-size: 14px !important;
   flex-shrink: 0;
 }
 
@@ -241,92 +245,157 @@
 .nav-card-user-info {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 4px;
+  gap: 8px;
+  margin-bottom: 2px;
 }
 
 .nav-card-user-avatar {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   object-fit: cover;
 }
 
 .nav-card-user-avatar-fallback {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   background-color: rgba(255, 255, 255, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: inherit;
 }
 
 .nav-card-user-email {
-  font-size: 12px;
-  opacity: 0.7;
+  font-size: 11px;
+  opacity: 0.65;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 140px;
+  max-width: 120px;
 }
 
-/* Mobile responsive */
+/* ─── Mobile ─────────────────────────────────────── */
 @media (max-width: 768px) {
   .card-nav-container {
-    width: 92%;
-    top: 0.8em;
+    width: 94%;
+    top: 0.6em;
+  }
+
+  .card-nav {
+    height: 50px;
+    border-radius: 0.65rem;
   }
 
   .card-nav-top {
-    padding: 0.5rem 0.8rem;
-    justify-content: space-between;
+    height: 50px;
+    padding: 0 0.4rem 0 0.75rem;
   }
 
+  /* Hamburger left, logo left of center, actions right */
   .hamburger-menu {
-    order: 2;
+    order: 1;
+    gap: 4px;
+  }
+
+  .hamburger-line {
+    width: 20px;
   }
 
   .logo-container {
     position: static;
     transform: none;
-    order: 1;
+    order: 2;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .logo-container .logo-icon {
+    font-size: 20px;
+  }
+
+  .logo-container .logo-text {
+    font-size: 0.95rem;
   }
 
   .card-nav-actions {
-    display: flex;
-    gap: 4px;
-    align-items: center;
+    order: 3;
+    gap: 0px;
   }
 
-  .card-nav-actions .button-label-text {
+  /* Hide Sign In text label on mobile — icon/avatar only */
+  .card-nav-cta-button .button-label-text {
     display: none;
   }
 
+  /* Make CTA button a compact pill */
+  .card-nav-cta-button {
+    padding: 0 0.6rem;
+    height: 30px;
+    font-size: 0.78rem;
+    border-radius: 999px;
+  }
+
+  .card-nav-icon-button {
+    padding: 5px;
+  }
+
+  .cart-badge {
+    font-size: 8px;
+    min-width: 13px;
+    height: 13px;
+    top: 1px;
+    right: 1px;
+  }
+
+  /* Expanded content — HORIZONTAL row of cards on mobile */
   .card-nav-content {
-    flex-direction: column;
+    top: 50px;
+    flex-direction: row;
     align-items: stretch;
-    gap: 8px;
-    padding: 0.5rem;
+    gap: 6px;
+    padding: 0.4rem;
     bottom: 0;
-    justify-content: flex-start;
   }
 
   .nav-card {
     height: auto;
-    min-height: 60px;
-    flex: 1 1 auto;
-    max-height: none;
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 10px 10px;
+    gap: 4px;
   }
 
   .nav-card-label {
-    font-size: 18px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .nav-card-links {
+    margin-top: 4px;
+    gap: 2px;
   }
 
   .nav-card-link {
-    font-size: 14px;
+    font-size: 12px;
+    gap: 4px;
+    padding: 1px 0;
+  }
+
+  .nav-card-link-icon {
+    font-size: 12px !important;
+  }
+
+  .nav-card-user-info {
+    margin-bottom: 0;
+    gap: 5px;
+  }
+
+  .nav-card-user-email {
+    font-size: 10px;
+    max-width: 70px;
   }
 }

@@ -39,27 +39,28 @@ interface LoginModalProps {
 
 // LoginModal component displays a modal for Google sign-in - Updated: Enhanced with MUI Dialog and improved UX.
 export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
-  // Get setUser function from context to update user state after sign-in.
-  const { setUser } = useConfig();
+  // ConfigContext — not needed for redirect flow but kept for future use.
+  useConfig();
   // Local state for error messages.
   const [error, setError] = useState<string | null>(null);
   // Local state for loading indicator.
   const [isLoading, setIsLoading] = useState(false);
 
   // Handle Google sign-in button click.
+  // signInWithGoogle() triggers an OAuth redirect — the browser navigates away to Google,
+  // so we just show a loading state and never reach the catch unless the redirect itself fails.
   const handleGoogleSignIn = async () => {
     try {
-      setError(null); // Clear previous errors.
-      setIsLoading(true); // Show loading indicator.
-      const user = await signInWithGoogle(); // Sign in with Google via Supabase Auth.
-      setUser(user); // Update user state in context.
-      onClose(); // Close the modal on success.
+      setError(null);
+      setIsLoading(true);
+      await signInWithGoogle();
+      // Browser is now redirecting to Google — the modal will unmount naturally.
     } catch (error) {
-      console.error('Error signing in with Google:', error); // Log error.
-      setError('Failed to sign in with Google. Please try again.'); // Show error message.
-    } finally {
-      setIsLoading(false); // Hide loading indicator.
+      console.error('Error signing in with Google:', error);
+      setError('Failed to start Google sign-in. Please try again.');
+      setIsLoading(false);
     }
+    // Note: don't reset isLoading on success — keeps spinner visible during redirect.
   };
 
   return (
@@ -96,7 +97,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
         {/* Welcome Message - New: Added welcoming content */}
         <Box sx={{ textAlign: 'center', mb: 3 }}>
           <Typography variant="body1" color="text.secondary" gutterBottom>
-            Welcome to Productor1
+            Welcome to Frosted Crusts
           </Typography>
           <Typography variant="body2" color="text.secondary">
             Sign in to save your orders, track history, and enjoy a personalized experience.

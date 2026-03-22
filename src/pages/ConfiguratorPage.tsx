@@ -1,245 +1,265 @@
-// FRONTEND CAKE CONFIGURATOR PAGE: This file defines the ConfiguratorPage component for the React frontend.
-// It provides the main UI for customizing a cake, showing a summary, and handling payment and authentication.
-//
-// Design Patterns: Uses the React Component pattern, Context pattern for global state, modal/dialog pattern, and conditional rendering for payment/auth.
-// Data Structures: Uses React state (useState), context objects, and props for component communication.
-// Security: Requires authentication for payment, disables payment if config is incomplete, and handles errors securely.
-
-// Import React and useState for component logic and state management.
 import React, { useState } from 'react';
-// Import useNavigate from React Router for programmatic navigation.
-import { useNavigate } from 'react-router-dom';
-// Import MUI components for enhanced configurator UI
+import { useNavigate, Link } from 'react-router-dom';
 import {
-  Box,
-  Container,
-  Paper,
-  Button,
-  Stack,
-  Typography,
-  Divider,
-  Chip,
+  Box, Typography, Button, Stack, Chip, useTheme, Tooltip,
 } from '@mui/material';
 import {
-  QrCode,
-  ArrowForward,
-  Login,
-  CheckCircle,
-  ShoppingCart,
+  QrCode, ShoppingCart, CheckCircle, ThreeDRotation, ZoomIn, NavigateNext,
 } from '@mui/icons-material';
-// Import useConfig hook to access global state (user, config).
 import { useConfig } from '../context/ConfigContext';
-// Import useCart hook to add items to cart
 import { useCart } from '../context/CartContext';
-// Import CakeCustomizer for cake options UI.
 import CakeCustomizer from '../components/CakeCustomizer';
-// Import PriceSummary for displaying current config and price.
-import PriceSummary from '../components/PriceSummary';
-// Import LoginModal for authentication.
+import CakePreview from '../components/ProductPreview/CakePreview';
 import LoginModal from '../components/LoginModal';
-// Import QRCodeModal for displaying QR code of config.
 import QRCodeModal from '../components/QRCodeModal';
+import { IMAGES } from '../constants/images';
 
-// ConfiguratorPage component provides the main cake customization and order flow - Updated: Enhanced with MUI design.
 export default function ConfiguratorPage() {
-  // Get navigate function for routing.
   const navigate = useNavigate();
-  // Get config and user from context.
   const { config, user, resetConfig } = useConfig();
-  // Get cart functions from context
   const { addToCart } = useCart();
-  // Local state for login modal visibility.
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
+
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  // Local state for QR code modal visibility.
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
-  // Local state for add to cart loading
   const [addingToCart, setAddingToCart] = useState(false);
 
-  // Boolean for whether the user can proceed (must select required fields based on product)
   const canProceed = (() => {
     if (config.productType === 'cake') {
       return config.size && (config.flavors || []).length > 0 && config.shape;
-    } else if (config.productType === 'cookies' || config.productType === 'muffins') {
-      return config.boxSize && config.boxFlavors && config.boxFlavors.length > 0;
     }
-    return false;
+    return config.boxSize && config.boxFlavors && config.boxFlavors.length > 0;
   })();
 
-  // Handle "Add to Cart" button click - supports both authenticated and guest users
   const handleAddToCart = async () => {
     setAddingToCart(true);
     try {
-      await addToCart({
-        productType: config.productType,
-        customization: config,
-        quantity: 1,
-        unitPrice: config.price,
-      });
-      // Reset the configuration after adding to cart
+      await addToCart({ productType: config.productType, customization: config, quantity: 1, unitPrice: config.price });
       resetConfig();
-      // Navigate to cart page
       navigate('/cart');
-    } catch (error) {
-      console.error('Error adding to cart:', error);
+    } catch {
       alert('Failed to add item to cart');
     } finally {
       setAddingToCart(false);
     }
   };
 
-  // Render the configurator UI - Updated: Enhanced with MUI layout and components.
-  return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50', py: 4 }}>
-      <Container maxWidth="xl">
-        {/* Page Header - New: Added page title and breadcrumb */}
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" component="h1" sx={{ fontWeight: 700, mb: 1 }}>
-            Customize Your Order
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Design your perfect cake with our easy-to-use configurator
-          </Typography>
-        </Box>
+  const previewImg = config.productType === 'cake' ? IMAGES.featured3 : IMAGES.featured4;
+  const isCake = config.productType === 'cake';
 
-        {/* Main Layout - Updated: Enhanced split layout with MUI */}
+  return (
+    <Box
+      sx={{
+        height: { xs: 'calc(100vh - 66px)', md: 'calc(100vh - 80px)' },
+        display: 'flex',
+        flexDirection: { xs: 'column', lg: 'row' },
+        overflow: 'hidden',
+        bgcolor: 'background.default',
+      }}
+    >
+      {/* ── Left: Preview Panel ── */}
+      <Box
+        sx={{
+          flex: { xs: '0 0 26vh', lg: '0 0 38%' },
+          position: 'relative',
+          bgcolor: isDark ? '#1a0c0f' : '#fcf8f9',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Radial gradient */}
+        <Box sx={{ position: 'absolute', inset: 0, background: isDark
+          ? 'radial-gradient(circle at center, rgba(239,57,102,0.06) 0%, transparent 70%)'
+          : 'radial-gradient(circle at center, rgba(239,57,102,0.04) 0%, transparent 70%)' }}
+        />
+
+        {/* Floating breadcrumb */}
         <Box
           sx={{
-            display: 'flex',
-            flexDirection: { xs: 'column', md: 'row' },
-            gap: 4,
-            alignItems: 'flex-start',
+            position: 'absolute', top: 20, left: 20, zIndex: 10,
+            bgcolor: isDark ? 'rgba(34,16,21,0.7)' : 'rgba(255,255,255,0.7)',
+            backdropFilter: 'blur(10px)',
+            border: `1px solid ${isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.5)'}`,
+            borderRadius: '0.5rem', px: 2, py: 1,
           }}
         >
-          {/* Left Column - Customizer - Updated: Enhanced with Paper wrapper */}
-          <Box sx={{ flex: 2, minWidth: 0 }}>
-            <Paper
-              elevation={2}
-              sx={{
-                borderRadius: 3,
-                overflow: 'hidden',
-              }}
-            >
-              <CakeCustomizer />
-            </Paper>
-          </Box>
+          <Stack direction="row" alignItems="center" spacing={0.5}>
+            {[
+              { label: 'Home', to: '/' },
+              { label: 'Custom Cakes' },
+              { label: 'Configurator', active: true },
+            ].map((crumb, i) => (
+              <React.Fragment key={crumb.label}>
+                {i > 0 && <NavigateNext sx={{ fontSize: 14, color: 'text.disabled' }} />}
+                {crumb.to ? (
+                  <Typography variant="caption" component={Link} to={crumb.to} sx={{ color: 'text.secondary', textDecoration: 'none', '&:hover': { color: 'primary.main' } }}>
+                    {crumb.label}
+                  </Typography>
+                ) : (
+                  <Typography variant="caption" sx={{ color: crumb.active ? 'primary.main' : 'text.secondary', fontWeight: crumb.active ? 700 : 400 }}>
+                    {crumb.label}
+                  </Typography>
+                )}
+              </React.Fragment>
+            ))}
+          </Stack>
+        </Box>
 
-          {/* Right Column - Summary and Actions - Updated: Enhanced sticky sidebar */}
-          <Box sx={{ flex: 1, minWidth: { xs: '100%', md: 300 }, width: { xs: '100%', md: 'auto' } }}>
+        {/* Preview: dynamic SVG for cake, static image for other products */}
+        <Box sx={{ position: 'relative', width: '82%', maxWidth: 340, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {isCake ? (
             <Box
               sx={{
-                position: { md: 'sticky' },
-                top: { md: 90 },
+                width: '100%',
+                filter: isDark
+                  ? 'drop-shadow(0 8px 24px rgba(0,0,0,0.5))'
+                  : 'drop-shadow(0 8px 24px rgba(0,0,0,0.15))',
               }}
             >
-              {/* Price Summary - Updated: Enhanced wrapper */}
-              <Paper
-                elevation={2}
-                sx={{
-                  borderRadius: 3,
-                  mb: 3,
-                  overflow: 'hidden',
-                }}
-              >
-                <PriceSummary />
-              </Paper>
-
-              {/* Action Buttons - Updated: Enhanced with MUI styling */}
-              <Paper
-                elevation={2}
-                sx={{
-                  p: 3,
-                  borderRadius: 3,
-                }}
-              >
-                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                  Ready to Order?
-                </Typography>
-                
-                {/* Configuration Status - New: Added status indicator */}
-                <Box sx={{ mb: 3 }}>
-                  {canProceed ? (
-                    <Chip
-                      icon={<CheckCircle />}
-                      label="Configuration Complete"
-                      color="success"
-                      variant="outlined"
-                      size="small"
-                    />
-                  ) : (
-                    <Chip
-                      label="Please complete your selection"
-                      color="warning"
-                      variant="outlined"
-                      size="small"
-                    />
-                  )}
-                </Box>
-
-                <Stack spacing={2}>
-                  {/* QR Code Button - Updated: Enhanced with MUI styling */}
-                  <Button
-                    variant="outlined"
-                    startIcon={<QrCode />}
-                    onClick={() => setIsQRModalOpen(true)}
-                    sx={{
-                      borderRadius: 2,
-                      textTransform: 'none',
-                      py: 1.5,
-                    }}
-                    fullWidth
-                  >
-                    Generate QR Code
-                  </Button>
-
-                  <Divider sx={{ my: 1 }} />
-
-                  {/* Add to Cart Button - NEW FLOW: Primary action */}
-                  <Button
-                    variant="contained"
-                    size="large"
-                    startIcon={<ShoppingCart />}
-                    onClick={handleAddToCart}
-                    disabled={!canProceed || addingToCart}
-                    sx={{
-                      borderRadius: 2,
-                      textTransform: 'none',
-                      py: 1.5,
-                      fontSize: '1.1rem',
-                      fontWeight: 600,
-                    }}
-                    fullWidth
-                  >
-                    {addingToCart ? 'Adding to Cart...' : 'Add to Cart'}
-                  </Button>
-
-                  {/* Help Text - New: Added helpful guidance */}
-                  {!canProceed && (
-                    <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center', mt: 1 }}>
-                      {config.productType === 'cake'
-                        ? 'Please select size, flavor, and shape to continue'
-                        : 'Please select box size and flavors to continue'
-                      }
-                    </Typography>
-                  )}
-                </Stack>
-              </Paper>
+              <CakePreview config={config} />
             </Box>
-          </Box>
+          ) : (
+            <>
+              <Box sx={{ position: 'absolute', bottom: '5%', left: '50%', transform: 'translateX(-50%)', width: '60%', height: 30, bgcolor: 'rgba(0,0,0,0.08)', filter: 'blur(16px)', borderRadius: '50%' }} />
+              <Box
+                component="img"
+                src={previewImg}
+                alt="Product preview"
+                sx={{
+                  width: '80%',
+                  objectFit: 'contain',
+                  filter: 'drop-shadow(0 16px 24px rgba(0,0,0,0.18))',
+                  maskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)',
+                  WebkitMaskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)',
+                  transition: 'transform 0.6s ease',
+                  '&:hover': { transform: 'scale(1.04)' },
+                }}
+              />
+            </>
+          )}
         </Box>
-      </Container>
 
-      {/* Login modal for authentication */}
-      <LoginModal
-        isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
-      />
+        {/* Floating decorative buttons */}
+        <Stack direction="row" spacing={2} sx={{ position: 'absolute', bottom: 24, left: '50%', transform: 'translateX(-50%)', zIndex: 10 }}>
+          {[
+            { icon: <ThreeDRotation sx={{ fontSize: 18 }} />, label: 'Rotate' },
+            { icon: <ZoomIn sx={{ fontSize: 18 }} />, label: 'Zoom' },
+          ].map(btn => (
+            <Box
+              key={btn.label}
+              sx={{
+                display: 'flex', alignItems: 'center', gap: 1,
+                px: 2, py: 1,
+                bgcolor: isDark ? '#2d161c' : '#fff',
+                borderRadius: '9999px',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
+                fontSize: '0.8rem', fontWeight: 700,
+                color: 'text.primary',
+                cursor: 'default',
+              }}
+            >
+              {btn.icon} {btn.label}
+            </Box>
+          ))}
+        </Stack>
+      </Box>
 
-      {/* QR code modal for displaying config as QR */}
-      <QRCodeModal
-        isOpen={isQRModalOpen}
-        onClose={() => setIsQRModalOpen(false)}
-        mode="display"
-      />
+      {/* ── Right: Config Panel ── */}
+      <Box
+        sx={{
+          flex: { xs: '1 1 auto', lg: '0 0 62%' },
+          display: 'flex',
+          flexDirection: 'column',
+          bgcolor: 'background.paper',
+          borderLeft: { lg: `1px solid ${isDark ? '#48232c' : '#f3e7ea'}` },
+          boxShadow: { lg: '-20px 0 60px rgba(0,0,0,0.06)' },
+          overflow: 'hidden',
+          zIndex: 10,
+        }}
+      >
+        {/* Panel header */}
+        <Box sx={{ px: { xs: 2.5, md: 4 }, pt: { xs: 2, md: 4 }, pb: { xs: 1.5, md: 3 }, borderBottom: `1px solid ${isDark ? '#48232c' : '#f3e7ea'}`, flexShrink: 0 }}>
+          <Typography variant="h5" fontWeight={700} color="text.primary" gutterBottom>
+            Build Your Masterpiece
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Customise every layer to perfection.
+          </Typography>
+        </Box>
+
+        {/* Scrollable stepper content */}
+        <Box sx={{ flex: 1, overflowY: 'auto', '&::-webkit-scrollbar': { width: 6 }, '&::-webkit-scrollbar-thumb': { bgcolor: isDark ? '#48232c' : '#e5d0d6', borderRadius: 3 } }}>
+          <CakeCustomizer />
+        </Box>
+
+        {/* Sticky bottom bar */}
+        <Box
+          sx={{
+            flexShrink: 0,
+            p: { xs: 1.75, md: 3 },
+            borderTop: `1px solid ${isDark ? '#48232c' : '#f3e7ea'}`,
+            bgcolor: 'background.paper',
+            boxShadow: '0 -10px 40px rgba(0,0,0,0.05)',
+          }}
+        >
+          {/* Price + status row */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', mb: 2.5 }}>
+            <Box>
+              <Typography variant="caption" color="text.secondary" fontWeight={500} sx={{ mb: 0.5, display: 'block' }}>
+                Total Estimate
+              </Typography>
+              <Typography variant="h4" fontWeight={900} color="text.primary" sx={{ letterSpacing: '-0.02em', lineHeight: 1 }}>
+                ₦{config.price.toLocaleString()}
+              </Typography>
+            </Box>
+            <Stack alignItems="flex-end" spacing={0.5}>
+              <Chip
+                label="Ready in 2 days"
+                size="small"
+                sx={{ bgcolor: isDark ? 'rgba(34,197,94,0.15)' : 'rgba(34,197,94,0.1)', color: '#16a34a', fontWeight: 700, fontSize: '0.7rem' }}
+              />
+              {canProceed && (
+                <Chip icon={<CheckCircle sx={{ fontSize: '14px !important' }} />} label="Config complete" size="small" color="success" variant="outlined" />
+              )}
+            </Stack>
+          </Box>
+
+          {/* Action buttons */}
+          <Stack direction="row" spacing={1.5}>
+            <Button
+              variant="contained"
+              size="large"
+              startIcon={<ShoppingCart />}
+              onClick={handleAddToCart}
+              disabled={!canProceed || addingToCart}
+              sx={{ flex: 1, py: 1.5, borderRadius: '0.75rem', fontWeight: 700, fontSize: '0.95rem', boxShadow: '0 8px 20px rgba(239,57,102,0.25)' }}
+            >
+              {addingToCart ? 'Adding...' : 'Add to Basket'}
+            </Button>
+            <Tooltip title="Generate QR Code">
+              <Button
+                variant="outlined"
+                onClick={() => setIsQRModalOpen(true)}
+                sx={{ px: 2, py: 1.5, borderRadius: '0.75rem', borderColor: isDark ? '#48232c' : '#f3e7ea', minWidth: 'auto' }}
+              >
+                <QrCode />
+              </Button>
+            </Tooltip>
+          </Stack>
+
+          {!canProceed && (
+            <Typography variant="caption" color="text.disabled" sx={{ mt: 1, display: 'block', textAlign: 'center' }}>
+              {config.productType === 'cake' ? 'Select size, shape & at least one layer flavour' : 'Select box size and flavours'}
+            </Typography>
+          )}
+        </Box>
+      </Box>
+
+      <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
+      <QRCodeModal isOpen={isQRModalOpen} onClose={() => setIsQRModalOpen(false)} mode="display" />
     </Box>
   );
-} 
+}
