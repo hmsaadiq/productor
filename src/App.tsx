@@ -38,6 +38,7 @@ import DeliveryDetailsPage from './pages/DeliveryDetailsPage';
 import AdminDashboard from './pages/AdminDashboard';
 // Import Footer
 import Footer from './components/Footer';
+import ProfilePage from './pages/ProfilePage';
 
 // Footer wrapper — hides footer on pages where it should not appear.
 function ConditionalFooter() {
@@ -97,6 +98,15 @@ function App() {
               element={
                 <ProtectedRoute>
                   <OrderHistoryPage />
+                </ProtectedRoute>
+              }
+            />
+            {/* Profile page ("/profile") is protected and requires authentication. */}
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <ProfilePage />
                 </ProtectedRoute>
               }
             />

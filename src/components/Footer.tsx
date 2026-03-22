@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Stack, IconButton, TextField, Button, Divider, useTheme } from '@mui/material';
+import { Box, Typography, Stack, IconButton, Divider, useTheme } from '@mui/material';
 import { BakeryDining, Instagram, WhatsApp, Email, LocationOn, Phone } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
@@ -115,11 +115,11 @@ export default function Footer() {
               </Typography>
               <Stack direction="row" spacing={1} alignItems="flex-start">
                 <LocationOn sx={{ fontSize: 16, color: 'primary.main', mt: 0.3, flexShrink: 0 }} />
-                <Typography variant="body2" sx={{ color: textMuted }}>Lagos, Nigeria</Typography>
+                <Typography variant="body2" sx={{ color: textMuted }}>Abuja, Nigeria</Typography>
               </Stack>
               <Stack direction="row" spacing={1} alignItems="center">
                 <Phone sx={{ fontSize: 16, color: 'primary.main', flexShrink: 0 }} />
-                <Typography variant="body2" sx={{ color: textMuted }}>+234 — —</Typography>
+                <Typography variant="body2" sx={{ color: textMuted }}>+234 +234 9133748447</Typography>
               </Stack>
               <Stack direction="row" spacing={1} alignItems="center">
                 <Email sx={{ fontSize: 16, color: 'primary.main', flexShrink: 0 }} />
@@ -127,8 +127,9 @@ export default function Footer() {
               </Stack>
             </Stack>
           </Box>
+        </Box>
 
-          {/* Newsletter */}
+          {/* Newsletter
           <Box>
             <Stack spacing={2}>
               <Typography variant="subtitle2" fontWeight={700} color="text.primary" sx={{ textTransform: 'uppercase', letterSpacing: '0.08em', fontSize: '0.75rem' }}>
@@ -161,7 +162,7 @@ export default function Footer() {
               </Stack>
             </Stack>
           </Box>
-        </Box>
+        </Box> */}
 
         <Divider sx={{ my: 5, borderColor }} />
 
