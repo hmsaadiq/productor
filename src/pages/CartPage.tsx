@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -107,6 +108,10 @@ export default function CartPage() {
 
   return (
     <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', pb: 8 }}>
+      <Helmet>
+        <title>Your Cart | Frosted Crusts</title>
+        <meta name="description" content="Review your cake order and proceed to checkout." />
+      </Helmet>
       <Container maxWidth="lg" sx={{ pt: 5 }}>
         {/* Header */}
         <Box sx={{ mb: 5 }}>

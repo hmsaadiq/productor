@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
@@ -84,6 +85,10 @@ export default function ConfirmationPage() {
   // Render the confirmation UI - Updated: Enhanced with MUI components and better layout.
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', py: 4 }}>
+      <Helmet>
+        <title>Order Confirmed | Frosted Crusts</title>
+        <meta name="description" content="Your custom cake order has been placed. We'll be in touch shortly." />
+      </Helmet>
       <Container maxWidth="lg">
         {/* Success Header - Updated: Enhanced with MUI styling */}
         <Box sx={{ textAlign: 'center', mb: 6 }}>

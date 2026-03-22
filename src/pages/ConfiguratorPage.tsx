@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   Box, Typography, Button, Stack, Chip, useTheme, Tooltip,
@@ -58,6 +59,10 @@ export default function ConfiguratorPage() {
         bgcolor: 'background.default',
       }}
     >
+      <Helmet>
+        <title>Design Your Cake | Frosted Crusts</title>
+        <meta name="description" content="Customise your perfect handcrafted cake — choose size, flavour, filling, and add-ons. Order online with 48hr delivery in Abuja." />
+      </Helmet>
       {/* ── Left: Preview Panel ── */}
       <Box
         sx={{

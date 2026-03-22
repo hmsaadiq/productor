@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import {
   Box, Container, Typography, TextField, Button, Select, MenuItem,
@@ -146,6 +147,10 @@ export default function DeliveryDetailsPage() {
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', py: { xs: 3, md: 5 } }}>
+      <Helmet>
+        <title>Delivery Details | Frosted Crusts</title>
+        <meta name="description" content="Enter your contact and delivery details to complete your cake order." />
+      </Helmet>
       <Container maxWidth="xl">
         {/* ── 3-Step Stepper ── */}
         <Box sx={{ maxWidth: 600, mx: 'auto', mb: 6, px: 2 }}>

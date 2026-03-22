@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import {
   Box,
   Container,
@@ -180,6 +181,10 @@ export default function OrderHistoryPage() {
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', pb: 8 }}>
+      <Helmet>
+        <title>Order History | Frosted Crusts</title>
+        <meta name="description" content="View and track all your past cake orders from Frosted Crusts." />
+      </Helmet>
       <Container maxWidth="lg" sx={{ pt: 5 }}>
 
         {/* Status Update Toast */}

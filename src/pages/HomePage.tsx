@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import {
   Box, Typography, Button, Stack, Chip, useTheme,
@@ -48,6 +49,10 @@ export default function HomePage() {
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+      <Helmet>
+        <title>Custom Birthday Cakes Abuja | Frosted Crusts</title>
+        <meta name="description" content="Order handcrafted custom cakes in Abuja. Chocolate, red velvet, biscoff and more. 48hr delivery." />
+      </Helmet>
 
       {/* ── Hero ── */}
       <Box sx={{ px: { xs: 1.5, md: 4 }, py: { xs: 1.5, md: 3 } }}>

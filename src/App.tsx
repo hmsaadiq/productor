@@ -42,6 +42,7 @@ import ProfilePage from './pages/ProfilePage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import { Analytics } from '@vercel/analytics/react';
+import { HelmetProvider } from 'react-helmet-async';
 
 // Footer wrapper — hides footer on pages where it should not appear.
 function ConditionalFooter() {
@@ -72,6 +73,7 @@ function App() {
 
   return (
     // Wrap the app in MUI ThemeProvider for consistent styling
+    <HelmetProvider>
     <ThemeProvider theme={theme}>
       <CssBaseline />
       {/* Wrap the app in ConfigProvider to supply global state (user, config) to all components. */}
@@ -138,6 +140,7 @@ function App() {
         </CartProvider>
       </ConfigProvider>
     </ThemeProvider>
+    </HelmetProvider>
   );
 }
 
