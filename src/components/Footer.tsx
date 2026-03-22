@@ -119,7 +119,7 @@ export default function Footer() {
               </Stack>
               <Stack direction="row" spacing={1} alignItems="center">
                 <Phone sx={{ fontSize: 16, color: 'primary.main', flexShrink: 0 }} />
-                <Typography variant="body2" sx={{ color: textMuted }}>+234 +234 9133748447</Typography>
+                <Typography variant="body2" sx={{ color: textMuted }}>+234 9133748447</Typography>
               </Stack>
               <Stack direction="row" spacing={1} alignItems="center">
                 <Email sx={{ fontSize: 16, color: 'primary.main', flexShrink: 0 }} />

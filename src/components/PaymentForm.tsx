@@ -38,8 +38,7 @@ interface PaymentFormProps {
   onError: (error: Error) => void; // Callback for payment error.
 }
 
-// Paystack public key for test environment (should be replaced with live key in production).
-const publicKey = 'pk_test_477448a1c5f87a401a2636456565511a8bd6acdb';
+const publicKey = process.env.REACT_APP_PAYSTACK_PUBLIC_KEY || '';
 
 // PaymentForm component provides the payment UI and logic - Updated: Enhanced with MUI styling and better UX.
 export default function PaymentForm({ amount, userEmail, onSuccess, onError }: PaymentFormProps) {
