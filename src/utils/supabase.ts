@@ -97,6 +97,28 @@ export const subscribeToAuthChanges = (callback: (user: User | null) => void) =>
   };
 };
 
+// Sign up with email and password. Supabase will send a verification email.
+export const signUpWithEmail = (email: string, password: string) =>
+  supabase.auth.signUp({ email, password });
+
+// Sign in with email and password.
+export const signInWithEmail = (email: string, password: string) =>
+  supabase.auth.signInWithPassword({ email, password });
+
+// Send a password reset email with a link to /reset-password.
+export const sendPasswordReset = (email: string) =>
+  supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/reset-password`,
+  });
+
+// Update the current user's password (called from ResetPasswordPage after token exchange).
+export const updatePassword = (newPassword: string) =>
+  supabase.auth.updateUser({ password: newPassword });
+
+// Verify email OTP code sent after sign up.
+export const verifyEmailOtp = (email: string, token: string) =>
+  supabase.auth.verifyOtp({ email, token, type: 'signup' });
+
 // Export the Supabase client instance (Singleton).
 export default supabase;
 

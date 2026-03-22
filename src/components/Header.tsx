@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import CardNav from './CardNav/CardNav';
 import { useConfig } from '../context/ConfigContext';
 import { useCart } from '../context/CartContext';
@@ -42,7 +42,7 @@ export default function Header({ onSignInClick, mode, onToggleMode }: HeaderProp
     }
   };
 
-  const navItems = [
+  const navItems = useMemo(() => [
     {
       label: 'Shop',
       bgColor: '#3b1520',
@@ -74,7 +74,8 @@ export default function Header({ onSignInClick, mode, onToggleMode }: HeaderProp
           ]
         : [{ label: 'Sign In', path: '__signin__', ariaLabel: 'Sign in to account' }],
     },
-  ];
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  ], [user, isAdmin]);
 
   return (
     <CardNav

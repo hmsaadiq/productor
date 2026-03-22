@@ -38,10 +38,7 @@ import {
 } from '@mui/icons-material';
 // Import useConfig hook to access global state (user, config, resetConfig).
 import { useConfig } from '../context/ConfigContext';
-// Import createOrder utility to create a new order in the backend.
-import { createOrder } from '../utils/orderService';
-// Import QRCodeModal for displaying the order as a QR code.
-import QRCodeModal from '../components/QRCodeModal';
+import { supabase } from '../utils/supabase';
 
 // Stepper steps
 const steps = ['Customize', 'Delivery Details', 'Payment', 'Confirmation'];
@@ -60,6 +57,36 @@ export default function ConfirmationPage() {
       navigate('/');
     }
   }, [user, navigate]);
+
+  // Send branded confirmation email once when order id is available
+  useEffect(() => {
+    if (!orderId || !user) return;
+    const sendEmail = async () => {
+      const { data: order } = await supabase
+        .from('orders')
+        .select('items, total_price, shipping_address')
+        .eq('id', orderId)
+        .single();
+      if (!order) return;
+      const sa = order.shipping_address || {};
+      await supabase.functions.invoke('send-order-confirmation', {
+        body: {
+          orderId,
+          email: sa.email || user.email,
+          name: sa.name || user.user_metadata?.full_name || '',
+          items: order.items,
+          total: order.total_price,
+          address: sa.address,
+          state: sa.state,
+          deliveryDate: sa.deliveryDate,
+          timeSlot: sa.timeSlot,
+          instructions: sa.instructions,
+        },
+      });
+    };
+    sendEmail();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orderId]);
 
   // Handle "Order Another Cake" button click.
   const handleContinueShopping = () => {

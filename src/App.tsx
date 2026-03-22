@@ -39,6 +39,7 @@ import AdminDashboard from './pages/AdminDashboard';
 // Import Footer
 import Footer from './components/Footer';
 import ProfilePage from './pages/ProfilePage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 // Footer wrapper — hides footer on pages where it should not appear.
 function ConditionalFooter() {
@@ -110,6 +111,8 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            {/* Password reset page ("/reset-password") — accessed via email link */}
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
             {/* Admin dashboard page ("/admin") is protected and requires admin access. */}
             <Route
               path="/admin"

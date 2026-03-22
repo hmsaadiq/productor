@@ -12,7 +12,6 @@ import {
   Box,
   Paper,
   Typography,
-  Button,
   Divider,
   Alert,
   Chip,
@@ -134,29 +133,32 @@ export default function PaymentForm({ amount, userEmail, onSuccess, onError }: P
             />
           </Stack>
 
-          {/* Paystack Button - Updated: Enhanced with MUI Button wrapper */}
-          <Box sx={{ position: 'relative' }}>
-            <Button
-              fullWidth
-              variant="contained"
-              size="large"
-              sx={{
+          {/* Paystack Button */}
+          <Box
+            sx={{
+              '& button': {
+                width: '100%',
                 py: 2,
+                px: 3,
+                border: 'none',
                 borderRadius: 3,
                 fontSize: '1rem',
                 fontWeight: 600,
+                cursor: 'pointer',
+                bgcolor: 'primary.main',
+                color: '#fff',
                 boxShadow: '0 4px 20px -2px rgba(239, 57, 102, 0.3)',
+                transition: 'box-shadow 0.2s, transform 0.15s',
                 '&:hover': {
+                  bgcolor: 'primary.dark',
                   boxShadow: '0 8px 30px -4px rgba(239, 57, 102, 0.4)',
                   transform: 'translateY(-1px)',
                 },
-                '&:active': {
-                  transform: 'translateY(0)',
-                }
-              }}
-            >
-              <PaystackButton {...paystackProps} />
-            </Button>
+                '&:active': { transform: 'translateY(0)' },
+              },
+            }}
+          >
+            <PaystackButton {...paystackProps} />
           </Box>
         </Box>
 

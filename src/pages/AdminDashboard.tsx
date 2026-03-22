@@ -445,6 +445,9 @@ export default function AdminDashboard() {
                                   <Typography variant="body2"><strong>Phone:</strong> {order.shipping_address.phone}</Typography>
                                   <Typography variant="body2"><strong>Address:</strong> {order.shipping_address.address}</Typography>
                                   <Typography variant="body2"><strong>State:</strong> {order.shipping_address.state}</Typography>
+                                  {order.shipping_address.deliveryDate && <Typography variant="body2"><strong>Date:</strong> {order.shipping_address.deliveryDate}</Typography>}
+                                  {order.shipping_address.timeSlot && <Typography variant="body2"><strong>Time slot:</strong> {order.shipping_address.timeSlot}</Typography>}
+                                  {order.shipping_address.instructions && <Typography variant="body2" sx={{ mt: 0.5, p: 1, bgcolor: 'warning.50', borderLeft: '3px solid', borderColor: 'warning.main', borderRadius: 0.5 }}><strong>Instructions:</strong> {order.shipping_address.instructions}</Typography>}
                                 </>
                               ) : order.config?.deliveryDetails ? (
                                 <>
@@ -694,6 +697,9 @@ export default function AdminDashboard() {
                             <Typography variant="body2"><strong>Phone:</strong> {order.shipping_address.phone}</Typography>
                             <Typography variant="body2"><strong>Address:</strong> {order.shipping_address.address}</Typography>
                             <Typography variant="body2"><strong>State:</strong> {order.shipping_address.state}</Typography>
+                            {order.shipping_address.deliveryDate && <Typography variant="body2"><strong>Date:</strong> {order.shipping_address.deliveryDate}</Typography>}
+                            {order.shipping_address.timeSlot && <Typography variant="body2"><strong>Time slot:</strong> {order.shipping_address.timeSlot}</Typography>}
+                            {order.shipping_address.instructions && <Typography variant="body2" sx={{ mt: 0.5, p: 1, bgcolor: 'warning.50', borderLeft: '3px solid', borderColor: 'warning.main', borderRadius: 0.5 }}><strong>Instructions:</strong> {order.shipping_address.instructions}</Typography>}
                           </>
                         ) : order.config?.deliveryDetails ? (
                           <>
