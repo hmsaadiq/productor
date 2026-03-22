@@ -12,7 +12,6 @@ import {
   AccordionSummary,
   AccordionDetails,
   Button,
-  IconButton,
   TextField,
   InputAdornment,
   useTheme,
@@ -21,14 +20,12 @@ import {
   History,
   ExpandMore,
   Receipt,
-  LocalShipping,
   ShoppingBag,
   TrendingUp,
   AccessTime,
   Refresh,
   Edit,
   Search,
-  Cancel,
 } from '@mui/icons-material';
 import { useConfig } from '../context/ConfigContext';
 import { getUserOrders } from '../utils/orderService';
@@ -36,7 +33,7 @@ import { Order } from '../types/order';
 import { supabase } from '../utils/supabase';
 import EditOrderModal from '../components/EditOrderModal';
 import { CancelOrderButton } from '../components/CancelOrderButton';
-import { formatStatus, getStatusColor } from '../utils/orderStatusHelpers';
+import { formatStatus } from '../utils/orderStatusHelpers';
 
 export default function OrderHistoryPage() {
   const { user } = useConfig();

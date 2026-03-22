@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -29,7 +28,6 @@ export default function CartPage() {
 
   const borderColor = isDark ? '#48232c' : '#f3e7ea';
   const surfaceColor = isDark ? '#2d161c' : '#ffffff';
-  const surface2 = isDark ? '#391c23' : '#fcf8f9';
 
   const formatCustomization = (customization: any) => {
     const details: string[] = [];

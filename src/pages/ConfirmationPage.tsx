@@ -1,25 +1,13 @@
-// FRONTEND ORDER CONFIRMATION PAGE: This file defines the ConfirmationPage component for the React frontend.
-// It displays the order confirmation, order details, and options to view QR code, order another cake, or view order history.
-//
-// Design Patterns: Uses the React Component pattern, Context pattern for global state, and modal/dialog pattern for QR code.
-// Data Structures: Uses React state (useState), context objects, and props for component communication.
-// Security: Redirects unauthenticated users, handles errors securely, and does not expose sensitive data.
-
-// Import React, useEffect, useState, and useRef for component logic, side effects, state management, and refs.
-import React, { useEffect, useState, useRef } from 'react';
-// Import useNavigate from React Router for programmatic navigation.
+import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-// Import MUI components for enhanced confirmation page UI
 import {
   Box,
   Container,
   Paper,
   Typography,
   Button,
-  Divider,
   Stack,
   Alert,
-  CircularProgress,
   Chip,
   Card,
   CardContent,
@@ -29,14 +17,9 @@ import {
 } from '@mui/material';
 import {
   CheckCircle,
-  QrCode,
-  ShoppingCart,
   History,
-  LocalShipping,
   Cake,
-  Receipt,
 } from '@mui/icons-material';
-// Import useConfig hook to access global state (user, config, resetConfig).
 import { useConfig } from '../context/ConfigContext';
 import { supabase } from '../utils/supabase';
 

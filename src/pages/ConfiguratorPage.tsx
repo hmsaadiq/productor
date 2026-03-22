@@ -16,7 +16,7 @@ import { IMAGES } from '../constants/images';
 
 export default function ConfiguratorPage() {
   const navigate = useNavigate();
-  const { config, user, resetConfig } = useConfig();
+  const { config, resetConfig } = useConfig();
   const { addToCart } = useCart();
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
