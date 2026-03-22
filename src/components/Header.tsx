@@ -68,7 +68,10 @@ export default function Header({ onSignInClick, mode, onToggleMode }: HeaderProp
       bgColor: '#1b0d11',
       textColor: '#fff',
       links: user
-        ? [{ label: 'Sign Out', path: '__signout__', ariaLabel: 'Sign out of account' }]
+        ? [
+            { label: 'My Profile', path: '/profile', ariaLabel: 'Go to profile' },
+            { label: 'Sign Out', path: '__signout__', ariaLabel: 'Sign out of account' },
+          ]
         : [{ label: 'Sign In', path: '__signin__', ariaLabel: 'Sign in to account' }],
     },
   ];

@@ -1,18 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box, Container, Typography, TextField, Button, Select, MenuItem,
   FormControl, FormHelperText, InputLabel, Alert, CircularProgress,
-  Stack, Paper, Chip, RadioGroup, FormControlLabel, Radio, useTheme,
-  Divider, IconButton,
+  Stack, Paper, Chip, RadioGroup, Radio, useTheme,
+  Divider, IconButton, Checkbox,
 } from '@mui/material';
 import {
-  CheckCircle, Lock, ArrowBack, Add, Remove, Schedule, WbSunny, Brightness3,
+  CheckCircle, Lock, ArrowBack, Add, Remove, Schedule,
 } from '@mui/icons-material';
 import { useConfig } from '../context/ConfigContext';
 import { useCart } from '../context/CartContext';
 import { createOrderFromCart } from '../utils/orderService';
 import PaymentForm from '../components/PaymentForm';
+import { supabase } from '../utils/supabase';
 
 const NIGERIAN_STATES = [
   'Abia','Adamawa','Akwa Ibom','Anambra','Bauchi','Bayelsa','Benue','Borno',
@@ -37,12 +38,11 @@ const TIME_SLOTS = [
 export default function DeliveryDetailsPage() {
   const navigate = useNavigate();
   const { user } = useConfig();
-  const { items, totalPrice, clearCart, updateQuantity, removeFromCart } = useCart();
+  const { items, totalPrice, clearCart, updateQuantity } = useCart();
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
 
   const borderColor = isDark ? '#48232c' : '#f3e7ea';
-  const surfaceColor = isDark ? '#2d161c' : '#fff';
   const mutedBg = isDark ? '#391c23' : '#fcf8f9';
 
   const [form, setForm] = useState({
@@ -52,11 +52,33 @@ export default function DeliveryDetailsPage() {
   const [timeSlot, setTimeSlot] = useState('afternoon');
   const [instructions, setInstructions] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
   const [showPayment, setShowPayment] = useState(false);
   const [contactEditMode, setContactEditMode] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [saveAsDefault, setSaveAsDefault] = useState(false);
+
+  // Pre-fill contact form from saved profile
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from('profiles')
+      .select('full_name, phone, default_address, default_state')
+      .eq('id', user.id)
+      .single()
+      .then(({ data }) => {
+        if (data) {
+          setForm(f => ({
+            ...f,
+            name:    data.full_name        || f.name,
+            phone:   data.phone            || f.phone,
+            address: data.default_address  || f.address,
+            state:   data.default_state    || f.state,
+          }));
+        }
+      });
+  }, [user]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | { target: { name: string; value: string } }) => {
     const { name, value } = e.target;
@@ -83,8 +105,19 @@ export default function DeliveryDetailsPage() {
     return Object.keys(errors).length === 0;
   };
 
-  const handleContactConfirm = () => {
+  const handleContactConfirm = async () => {
     if (!validateContact()) return;
+    if (saveAsDefault && user) {
+      await supabase.from('profiles').upsert({
+        id: user.id,
+        email: user.email,
+        full_name: form.name,
+        phone: form.phone,
+        default_address: form.address,
+        default_state: form.state,
+        updated_at: new Date().toISOString(),
+      });
+    }
     setContactEditMode(false);
   };
 
@@ -174,6 +207,19 @@ export default function DeliveryDetailsPage() {
                     {fieldErrors.state && <FormHelperText>{fieldErrors.state}</FormHelperText>}
                   </FormControl>
                 </Box>
+                {user && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', mt: 3, mb: -1 }}>
+                    <Checkbox
+                      checked={saveAsDefault}
+                      onChange={e => setSaveAsDefault(e.target.checked)}
+                      size="small"
+                      sx={{ pl: 0 }}
+                    />
+                    <Typography variant="body2" color="text.secondary">
+                      Save as my default delivery details
+                    </Typography>
+                  </Box>
+                )}
                 <Button variant="contained" onClick={handleContactConfirm} sx={{ mt: 3, borderRadius: '0.75rem', px: 4, fontWeight: 700 }}>
                   Confirm Contact Info
                 </Button>
