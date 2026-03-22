@@ -108,3 +108,4 @@ yarn.lock
 
 # Claude Code
 .claude/
+CLAUDE.md
