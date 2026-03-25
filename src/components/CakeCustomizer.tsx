@@ -75,17 +75,17 @@ const PRODUCT_TYPES = [
 const BOX_SIZES = [
   { value: 4,  label: 'Box of 4',  price: '₦12,000' },
   { value: 6,  label: 'Box of 6',  price: '₦18,000' },
-  { value: 12, label: 'Box of 12', price: '₦32,000' },
+  { value: 12, label: 'Box of 12', price: '₦32,000' }, // 2 free with box of 12
 ] as const;
 
 const COOKIE_MUFFIN_FLAVORS = ['chocolate chip', 'red velvet', 'vanilla', 'oatmeal', 'peanut butter'];
 
 const CAKE_PRICE_MATRIX: Record<string, Record<number, string>> = {
-  '6':     { 1: '₦14k', 2: '₦22k', 3: '₦30k' },
-  '8':     { 1: '₦18k', 2: '₦28k', 3: '₦38k' },
-  '10':    { 1: '₦22k', 2: '₦36k', 3: '₦52k' },
-  '12':    { 1: '₦28k', 2: '₦48k', 3: '₦68k' },
-  'Bento': { 1: '₦9.5k' },
+  '6':     { 1: '₦14k', 2: '₦22k', 3: '₦30k' }, //each extra layer costs 8k naira
+  '8':     { 1: '₦18k', 2: '₦28k', 3: '₦38k' }, //each extra layer costs 10k naira
+  '10':    { 1: '₦22k', 2: '₦36k', 3: '₦52k' }, //each extra layer costs 14k naira
+  '12':    { 1: '₦28k', 2: '₦48k', 3: '₦68k' }, //each extra layer costs 20k naira
+  'Bento': { 1: '₦9.5k' }, //bento is single layer only, costs 9.5k naira
 };
 
 /* ─── Component ──────────────────────────────────────────── */
@@ -527,7 +527,7 @@ export default function CakeCustomizer() {
               size="small"
               value={config.text || ''}
               onChange={e => e.target.value.length <= 40 && setConfig({ ...config, text: e.target.value })}
-              placeholder="e.g. Happy Birthday Sarah! 🎉"
+              placeholder="e.g. Cakes and candles Big dawg! 🎉"
               inputProps={{ maxLength: 40 }}
               helperText={`${40 - (config.text?.length || 0)} characters remaining`}
               sx={{
