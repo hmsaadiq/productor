@@ -82,7 +82,7 @@ export default function Footer() {
           <Box>
             <Stack spacing={2}>
               <Typography variant="subtitle2" fontWeight={700} color="text.primary" sx={{ textTransform: 'uppercase', letterSpacing: '0.08em', fontSize: '0.75rem' }}>
-                Shop
+                Shop with us
               </Typography>
               {[
                 { label: 'Home', path: '/' },
@@ -168,15 +168,9 @@ export default function Footer() {
 
         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
           <Typography variant="caption" sx={{ color: textMuted }}>
-            © 2025 Frosted Crusts. All rights reserved.
+            © 2026 Productor, Trademark. By Saadiq.exe. All rights reserved.
           </Typography>
-          <Stack direction="row" spacing={3}>
-            {['Privacy Policy', 'Terms of Service', 'Support'].map(link => (
-              <Typography key={link} variant="caption" sx={{ color: textMuted, cursor: 'pointer', '&:hover': { color: 'primary.main' } }}>
-                {link}
-              </Typography>
-            ))}
-          </Stack>
+          
         </Box>
       </Box>
     </Box>

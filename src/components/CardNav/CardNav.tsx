@@ -216,9 +216,9 @@ const CardNav: React.FC<CardNavProps> = ({
             style={{ cursor: 'pointer' }}
             onKeyDown={(e) => { if (e.key === 'Enter') handleNavigate('/'); }}
           >
-            <BakeryDining className="logo-icon" />
+            {/* <BakeryDining className="logo-icon" /> */}
             <span className="logo-text" style={mode === 'dark' ? { color: '#f5f0f1' } : undefined}>
-              Frosted Crusts
+              Frosted Crusts By Hauwa
             </span>
           </div>
 
