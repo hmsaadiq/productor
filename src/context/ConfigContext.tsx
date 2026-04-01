@@ -6,11 +6,11 @@
 // Security: Handles authentication state (user), but does not store sensitive data directly. Relies on Supabase Auth for security.
 
 // Import React and hooks for context, state, and effect management.
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 // Import the User type from Supabase Auth for type safety.
 import { User } from '@supabase/supabase-js';
 // Import the function to subscribe to Supabase Auth state changes.
-import { subscribeToAuthChanges } from '../utils/supabase';
+import { subscribeToAuthChanges, signOut } from '../utils/supabase';
 
 // Define the shape of the cake configuration object.
 interface DeliveryDetails {
@@ -74,6 +74,9 @@ const defaultConfig: CakeConfig = {
 // The context is undefined by default to enforce usage within a provider.
 const ConfigContext = createContext<ConfigContextType | undefined>(undefined);
 
+// Auto sign-out after 30 minutes of user inactivity.
+const IDLE_TIMEOUT_MS = 30 * 60 * 1000;
+
 // Provider component that supplies user and config state to all children.
 export function ConfigProvider({ children }: { children: ReactNode }) {
   // State for the currently authenticated user.
@@ -90,6 +93,27 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
     // Cleanup subscription on unmount to prevent memory leaks.
     return () => unsubscribe();
   }, []);
+
+  // Idle timeout: sign the user out after IDLE_TIMEOUT_MS of inactivity.
+  const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const resetTimer = () => {
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+      idleTimerRef.current = setTimeout(() => { signOut(); }, IDLE_TIMEOUT_MS);
+    };
+
+    const events = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'];
+    events.forEach(e => window.addEventListener(e, resetTimer, { passive: true }));
+    resetTimer();
+
+    return () => {
+      events.forEach(e => window.removeEventListener(e, resetTimer));
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    };
+  }, [user]);
 
   // Reset the cake configuration to the default values.
   const resetConfig = () => {

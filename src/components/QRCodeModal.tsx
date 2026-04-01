@@ -29,6 +29,7 @@ import {
   CameraAlt,
   Share,
   ContentCopy,
+  Upload,
 } from '@mui/icons-material';
 // Import QRCodeSVG from qrcode.react for generating QR codes.
 import { QRCodeSVG } from 'qrcode.react';
@@ -59,6 +60,8 @@ export default function QRCodeModal({ isOpen, onClose, mode }: QRCodeModalProps)
   const [scanError, setScanError] = useState<string | null>(null);
   const [scannedConfig, setScannedConfig] = useState<any>(null);
   const scannerRef = useRef<Html5Qrcode | null>(null);
+  const svgContainerRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Stop and clear scanner helper.
   const stopScanner = async () => {
@@ -123,6 +126,25 @@ export default function QRCodeModal({ isOpen, onClose, mode }: QRCodeModalProps)
     }
   };
 
+  // Handle QR code scan from an uploaded image file.
+  const handleUploadScan = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+    setScanError(null);
+    setScannedConfig(null);
+    try {
+      const scanner = new Html5Qrcode('qr-upload-region');
+      const decodedText = await scanner.scanFile(file, true);
+      const parsed = JSON.parse(decodedText);
+      if (!parsed.productType) throw new Error('Not a valid Productor QR code.');
+      const { timestamp, ...cakeConfig } = parsed;
+      setScannedConfig(cakeConfig);
+    } catch (e: any) {
+      setScanError(e.message || 'Could not read QR code from image.');
+    }
+  };
+
   // Load the scanned config and navigate to /customize.
   const handleLoadConfig = () => {
     if (scannedConfig) {
@@ -141,7 +163,7 @@ export default function QRCodeModal({ isOpen, onClose, mode }: QRCodeModalProps)
   // Handle QR code download as PNG image.
   const handleDownload = () => {
     const canvas = document.createElement('canvas');
-    const svg = document.querySelector('svg');
+    const svg = svgContainerRef.current?.querySelector('svg') ?? null;
     if (svg) {
       const svgData = new XMLSerializer().serializeToString(svg);
       const img = new Image();
@@ -156,7 +178,7 @@ export default function QRCodeModal({ isOpen, onClose, mode }: QRCodeModalProps)
         downloadLink.href = pngFile;
         downloadLink.click();
       };
-      img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgData);
     }
   };
 
@@ -234,14 +256,16 @@ export default function QRCodeModal({ isOpen, onClose, mode }: QRCodeModalProps)
                 backgroundColor: 'white'
               }}
             >
-              <QRCodeSVG 
-                value={JSON.stringify(qrData)} 
-                size={220}
-                bgColor="#ffffff"
-                fgColor="#1b0d11"
-                level="M"
-                includeMargin={true}
-              />
+              <div ref={svgContainerRef}>
+                <QRCodeSVG
+                  value={JSON.stringify(qrData)}
+                  size={220}
+                  bgColor="#ffffff"
+                  fgColor="#1b0d11"
+                  level="M"
+                  includeMargin={true}
+                />
+              </div>
             </Paper>
 
             {/* Description - New: Added helpful description */}
@@ -282,6 +306,28 @@ export default function QRCodeModal({ isOpen, onClose, mode }: QRCodeModalProps)
 
             <Divider sx={{ my: 2 }} />
 
+            {/* Load from QR image */}
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="subtitle2" gutterBottom>Load a different configuration</Typography>
+              <Button
+                variant="outlined"
+                startIcon={<Upload />}
+                onClick={() => fileInputRef.current?.click()}
+                sx={{ borderRadius: 2 }}
+              >
+                Upload QR Image
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={handleUploadScan}
+              />
+            </Box>
+
+            <Divider sx={{ my: 2 }} />
+
             {/* Configuration Summary - New: Added quick summary */}
             <Box sx={{ textAlign: 'left' }}>
               <Typography variant="subtitle2" gutterBottom>
@@ -318,9 +364,21 @@ export default function QRCodeModal({ isOpen, onClose, mode }: QRCodeModalProps)
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
                   Point your camera at a Frosted Crusts QR code to load a cake configuration.
                 </Typography>
-                <Button variant="contained" startIcon={<CameraAlt />} onClick={handleStartScan} sx={{ borderRadius: 2 }}>
-                  Start Camera
-                </Button>
+                <Stack direction="row" spacing={2} justifyContent="center">
+                  <Button variant="contained" startIcon={<CameraAlt />} onClick={handleStartScan} sx={{ borderRadius: 2 }}>
+                    Start Camera
+                  </Button>
+                  <Button variant="outlined" startIcon={<Upload />} onClick={() => fileInputRef.current?.click()} sx={{ borderRadius: 2 }}>
+                    Upload Image
+                  </Button>
+                </Stack>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={handleUploadScan}
+                />
               </>
             )}
 
@@ -374,6 +432,8 @@ export default function QRCodeModal({ isOpen, onClose, mode }: QRCodeModalProps)
             )}
           </Box>
         )}
+        {/* Hidden region required by Html5Qrcode.scanFile — never visible */}
+        <div id="qr-upload-region" style={{ display: 'none' }} />
       </DialogContent>
 
       {/* Footer Actions - Updated: Enhanced with MUI DialogActions */}

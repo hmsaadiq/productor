@@ -75,9 +75,14 @@ export const subscribeToAuthChanges = (callback: (user: User | null) => void) =>
   });
 
   // Listen for auth changes
-  const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+  const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
     console.log('Auth state changed:', session?.user ? `User ${session.user.email} is signed in` : 'No user signed in');
-    
+
+    if ((event as string) === 'TOKEN_REFRESH_FAILED') {
+      callback(null);
+      return;
+    }
+
     if (session?.user) {
       // Create or update profile
       supabase.from('profiles').upsert({

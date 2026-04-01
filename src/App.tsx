@@ -6,7 +6,7 @@
 // Security: Routing is protected for certain pages (see ProtectedRoute), and authentication is handled via context.
 
 // Import React and useState for component logic and state management.
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Box from '@mui/material/Box';
 // Import React Router for client-side routing (SPA navigation).
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
@@ -44,11 +44,24 @@ import { SpeedInsights } from '@vercel/speed-insights/react';
 import { Analytics } from '@vercel/analytics/react';
 import { HelmetProvider } from 'react-helmet-async';
 
+// Pages where footer (and therefore scroll reset) should not apply.
+const NO_FOOTER_PAGES = ['/customize', '/admin'];
+
+// ScrollToTop — resets window scroll position on route changes, only on pages where the footer is shown.
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    if (!NO_FOOTER_PAGES.includes(pathname)) {
+      window.scrollTo(0, 0);
+    }
+  }, [pathname]);
+  return null;
+}
+
 // Footer wrapper — hides footer on pages where it should not appear.
 function ConditionalFooter() {
   const location = useLocation();
-  const hideOn = ['/customize', '/admin'];
-  if (hideOn.includes(location.pathname)) return null;
+  if (NO_FOOTER_PAGES.includes(location.pathname)) return null;
   return <Footer />;
 }
 
@@ -81,6 +94,7 @@ function App() {
         <CartProvider>
         {/* Set up the React Router for SPA navigation. */}
         <Router>
+        <ScrollToTop />
         {/* Main app container with background styling. */}
         <Box sx={{ minHeight: '100vh', paddingTop: { xs: '66px', md: '80px' } }}>
           {/* Header is always visible and contains navigation and sign-in/out controls. */}
