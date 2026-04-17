@@ -40,6 +40,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import Footer from './components/Footer';
 import ProfilePage from './pages/ProfilePage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import NotFoundPage from './pages/NotFoundPage';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import { Analytics } from '@vercel/analytics/react';
 import { HelmetProvider } from 'react-helmet-async';
@@ -140,6 +141,7 @@ function App() {
                 </AdminRoute>
               }
             />
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
           {/* Login modal is shown when user needs to authenticate. */}
           <LoginModal
