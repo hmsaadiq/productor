@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
 import { Typography, Box } from '@mui/material';
 import { useConfig } from '../context/ConfigContext';
 import { supabase } from '../utils/supabase';
+import AccessDeniedPage from '../pages/AccessDeniedPage';
 
 interface AdminRouteProps {
   children: React.ReactNode;
@@ -48,17 +48,11 @@ export default function AdminRoute({ children }: AdminRouteProps) {
   }
 
   if (!user) {
-    return <Navigate to="/" replace />;
+    return <AccessDeniedPage reason="unauthenticated" />;
   }
 
   if (!isAdmin) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-        <Typography variant="h5" color="error">
-          Access Denied - Admin Only
-        </Typography>
-      </Box>
-    );
+    return <AccessDeniedPage reason="unauthorized" />;
   }
 
   return <>{children}</>;

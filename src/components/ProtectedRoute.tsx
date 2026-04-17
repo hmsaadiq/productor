@@ -7,8 +7,8 @@
 
 // Import React for component creation.
 import React, { useEffect, useState } from 'react';
-// Import Navigate from React Router to redirect unauthenticated users.
 import { Navigate } from 'react-router-dom';
+import AccessDeniedPage from '../pages/AccessDeniedPage';
 // Import MUI components for enhanced loading and error states
 import {
   Box,
@@ -117,8 +117,7 @@ export default function ProtectedRoute({ children, showLoginPrompt = false }: Pr
       );
     }
 
-    // Default behavior: redirect to home page
-    return <Navigate to="/" replace />;
+    return <AccessDeniedPage reason="unauthenticated" />;
   }
 
   // If user is authenticated, render the protected children.
