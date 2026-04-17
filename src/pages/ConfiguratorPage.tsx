@@ -5,7 +5,7 @@ import {
   Box, Typography, Button, Stack, Chip, useTheme, Tooltip,
 } from '@mui/material';
 import {
-  QrCode, ShoppingCart, CheckCircle, ThreeDRotation, ZoomIn, NavigateNext,
+  QrCode, ShoppingCart, CheckCircle, NavigateNext,
 } from '@mui/icons-material';
 import { useConfig } from '../context/ConfigContext';
 import { useCart } from '../context/CartContext';
@@ -147,29 +147,7 @@ export default function ConfiguratorPage() {
           )}
         </Box>
 
-        {/* Floating decorative buttons */}
-        <Stack direction="row" spacing={2} sx={{ position: 'absolute', bottom: 24, left: '50%', transform: 'translateX(-50%)', zIndex: 10 }}>
-          {[
-            { icon: <ThreeDRotation sx={{ fontSize: 18 }} />, label: 'Rotate' },
-            { icon: <ZoomIn sx={{ fontSize: 18 }} />, label: 'Zoom' },
-          ].map(btn => (
-            <Box
-              key={btn.label}
-              sx={{
-                display: 'flex', alignItems: 'center', gap: 1,
-                px: 2, py: 1,
-                bgcolor: isDark ? '#2d161c' : '#fff',
-                borderRadius: '9999px',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
-                fontSize: '0.8rem', fontWeight: 700,
-                color: 'text.primary',
-                cursor: 'default',
-              }}
-            >
-              {btn.icon} {btn.label}
-            </Box>
-          ))}
-        </Stack>
+        {/* Rotate/Zoom decorative buttons removed */}
       </Box>
 
       {/* ── Right: Config Panel ── */}
