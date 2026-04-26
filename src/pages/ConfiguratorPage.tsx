@@ -11,9 +11,10 @@ import { useConfig } from '../context/ConfigContext';
 import { useCart } from '../context/CartContext';
 import CakeCustomizer from '../components/CakeCustomizer';
 import CakePreview from '../components/ProductPreview/CakePreview';
+import CookiesPreview from '../components/ProductPreview/CookiesPreview';
+import MuffinsPreview from '../components/ProductPreview/MuffinsPreview';
 import LoginModal from '../components/LoginModal';
 import QRCodeModal from '../components/QRCodeModal';
-import { IMAGES } from '../constants/images';
 
 export default function ConfiguratorPage() {
   const navigate = useNavigate();
@@ -46,8 +47,6 @@ export default function ConfiguratorPage() {
     }
   };
 
-  const previewImg = config.productType === 'cake' ? IMAGES.featured3 : IMAGES.featured4;
-  const isCake = config.productType === 'cake';
 
   return (
     <Box
@@ -113,38 +112,22 @@ export default function ConfiguratorPage() {
           </Stack>
         </Box>
 
-        {/* Preview: dynamic SVG for cake, static image for other products */}
-        <Box sx={{ position: 'relative', width: '82%', maxWidth: 340, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {isCake ? (
-            <Box
-              sx={{
-                width: '100%',
-                filter: isDark
-                  ? 'drop-shadow(0 8px 24px rgba(0,0,0,0.5))'
-                  : 'drop-shadow(0 8px 24px rgba(0,0,0,0.15))',
-              }}
-            >
-              <CakePreview config={config} />
-            </Box>
-          ) : (
-            <>
-              <Box sx={{ position: 'absolute', bottom: '5%', left: '50%', transform: 'translateX(-50%)', width: '60%', height: 30, bgcolor: 'rgba(0,0,0,0.08)', filter: 'blur(16px)', borderRadius: '50%' }} />
-              <Box
-                component="img"
-                src={previewImg}
-                alt="Product preview"
-                sx={{
-                  width: '80%',
-                  objectFit: 'contain',
-                  filter: 'drop-shadow(0 16px 24px rgba(0,0,0,0.18))',
-                  maskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)',
-                  WebkitMaskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)',
-                  transition: 'transform 0.6s ease',
-                  '&:hover': { transform: 'scale(1.04)' },
-                }}
-              />
-            </>
-          )}
+        {/* Preview: dynamic SVG for all product types */}
+        <Box
+          sx={{
+            width: '82%',
+            maxWidth: 340,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            filter: isDark
+              ? 'drop-shadow(0 8px 24px rgba(0,0,0,0.5))'
+              : 'drop-shadow(0 8px 24px rgba(0,0,0,0.15))',
+          }}
+        >
+          {config.productType === 'cake' && <CakePreview config={config} />}
+          {config.productType === 'cookies' && <CookiesPreview config={config} />}
+          {config.productType === 'muffins' && <MuffinsPreview config={config} />}
         </Box>
 
         {/* Rotate/Zoom decorative buttons removed */}
