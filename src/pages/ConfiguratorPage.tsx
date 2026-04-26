@@ -65,7 +65,7 @@ export default function ConfiguratorPage() {
       {/* ── Left: Preview Panel ── */}
       <Box
         sx={{
-          flex: { xs: '0 0 26vh', lg: '0 0 38%' },
+          flex: { xs: '0 0 160px', sm: '0 0 200px', lg: '0 0 38%' },
           position: 'relative',
           bgcolor: isDark ? '#1a0c0f' : '#fcf8f9',
           display: 'flex',
@@ -80,9 +80,10 @@ export default function ConfiguratorPage() {
           : 'radial-gradient(circle at center, rgba(239,57,102,0.04) 0%, transparent 70%)' }}
         />
 
-        {/* Floating breadcrumb */}
+        {/* Floating breadcrumb — desktop only */}
         <Box
           sx={{
+            display: { xs: 'none', lg: 'block' },
             position: 'absolute', top: 20, left: 20, zIndex: 10,
             bgcolor: isDark ? 'rgba(34,16,21,0.7)' : 'rgba(255,255,255,0.7)',
             backdropFilter: 'blur(10px)',
@@ -115,7 +116,7 @@ export default function ConfiguratorPage() {
         {/* Preview: dynamic SVG for all product types */}
         <Box
           sx={{
-            width: '82%',
+            width: { xs: '55%', sm: '65%', lg: '82%' },
             maxWidth: 340,
             display: 'flex',
             alignItems: 'center',
@@ -129,8 +130,6 @@ export default function ConfiguratorPage() {
           {config.productType === 'cookies' && <CookiesPreview config={config} />}
           {config.productType === 'muffins' && <MuffinsPreview config={config} />}
         </Box>
-
-        {/* Rotate/Zoom decorative buttons removed */}
       </Box>
 
       {/* ── Right: Config Panel ── */}
@@ -147,11 +146,11 @@ export default function ConfiguratorPage() {
         }}
       >
         {/* Panel header */}
-        <Box sx={{ px: { xs: 2.5, md: 4 }, pt: { xs: 2, md: 4 }, pb: { xs: 1.5, md: 3 }, borderBottom: `1px solid ${isDark ? '#48232c' : '#f3e7ea'}`, flexShrink: 0 }}>
-          <Typography variant="h5" fontWeight={700} color="text.primary" gutterBottom>
+        <Box sx={{ px: { xs: 2, md: 4 }, pt: { xs: 1.5, md: 4 }, pb: { xs: 1, md: 3 }, borderBottom: `1px solid ${isDark ? '#48232c' : '#f3e7ea'}`, flexShrink: 0 }}>
+          <Typography variant={{ xs: 'h6', md: 'h5' } as any} fontWeight={700} color="text.primary" gutterBottom sx={{ fontSize: { xs: '1rem', md: '1.5rem' } }}>
             Build Your Masterpiece
           </Typography>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" color="text.secondary" sx={{ display: { xs: 'none', sm: 'block' } }}>
             Customise every layer to perfection.
           </Typography>
         </Box>
@@ -172,12 +171,12 @@ export default function ConfiguratorPage() {
           }}
         >
           {/* Price + status row */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', mb: 2.5 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: { xs: 1.5, md: 2.5 } }}>
             <Box>
-              <Typography variant="caption" color="text.secondary" fontWeight={500} sx={{ mb: 0.5, display: 'block' }}>
+              <Typography variant="caption" color="text.secondary" fontWeight={500} sx={{ mb: 0.25, display: 'block' }}>
                 Total Estimate
               </Typography>
-              <Typography variant="h4" fontWeight={900} color="text.primary" sx={{ letterSpacing: '-0.02em', lineHeight: 1 }}>
+              <Typography fontWeight={900} color="text.primary" sx={{ fontSize: { xs: '1.4rem', md: '2rem' }, letterSpacing: '-0.02em', lineHeight: 1 }}>
                 ₦{config.price.toLocaleString()}
               </Typography>
             </Box>
