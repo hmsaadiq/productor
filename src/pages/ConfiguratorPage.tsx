@@ -13,7 +13,6 @@ import CakeCustomizer from '../components/CakeCustomizer';
 import CakePreview from '../components/ProductPreview/CakePreview';
 import CookiesPreview from '../components/ProductPreview/CookiesPreview';
 import MuffinsPreview from '../components/ProductPreview/MuffinsPreview';
-import LoginModal from '../components/LoginModal';
 import QRCodeModal from '../components/QRCodeModal';
 
 export default function ConfiguratorPage() {
@@ -23,8 +22,8 @@ export default function ConfiguratorPage() {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
 
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
+  const borderColor = isDark ? '#48232c' : '#f3e7ea';
   const [addingToCart, setAddingToCart] = useState(false);
 
   const canProceed = (() => {
@@ -65,7 +64,7 @@ export default function ConfiguratorPage() {
       {/* ── Left: Preview Panel ── */}
       <Box
         sx={{
-          flex: { xs: '0 0 160px', sm: '0 0 200px', lg: '0 0 38%' },
+          flex: { xs: '0 0 120px', sm: '0 0 160px', lg: '0 0 38%' },
           position: 'relative',
           bgcolor: isDark ? '#1a0c0f' : '#fcf8f9',
           display: 'flex',
@@ -116,7 +115,7 @@ export default function ConfiguratorPage() {
         {/* Preview: dynamic SVG for all product types */}
         <Box
           sx={{
-            width: { xs: '55%', sm: '65%', lg: '82%' },
+            width: { xs: '72%', sm: '68%', lg: '82%' },
             maxWidth: 340,
             display: 'flex',
             alignItems: 'center',
@@ -139,15 +138,15 @@ export default function ConfiguratorPage() {
           display: 'flex',
           flexDirection: 'column',
           bgcolor: 'background.paper',
-          borderLeft: { lg: `1px solid ${isDark ? '#48232c' : '#f3e7ea'}` },
+          borderLeft: { lg: `1px solid ${borderColor}` },
           boxShadow: { lg: '-20px 0 60px rgba(0,0,0,0.06)' },
           overflow: 'hidden',
           zIndex: 10,
         }}
       >
         {/* Panel header */}
-        <Box sx={{ px: { xs: 2, md: 4 }, pt: { xs: 1.5, md: 4 }, pb: { xs: 1, md: 3 }, borderBottom: `1px solid ${isDark ? '#48232c' : '#f3e7ea'}`, flexShrink: 0 }}>
-          <Typography variant={{ xs: 'h6', md: 'h5' } as any} fontWeight={700} color="text.primary" gutterBottom sx={{ fontSize: { xs: '1rem', md: '1.5rem' } }}>
+        <Box sx={{ px: { xs: 2, md: 4 }, pt: { xs: 1.5, md: 4 }, pb: { xs: 1, md: 3 }, borderBottom: `1px solid ${borderColor}`, flexShrink: 0 }}>
+          <Typography variant="h6" fontWeight={700} color="text.primary" gutterBottom sx={{ fontSize: { xs: '1rem', md: '1.5rem' } }}>
             Build Your Masterpiece
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ display: { xs: 'none', sm: 'block' } }}>
@@ -164,8 +163,9 @@ export default function ConfiguratorPage() {
         <Box
           sx={{
             flexShrink: 0,
-            p: { xs: 1.75, md: 3 },
-            borderTop: `1px solid ${isDark ? '#48232c' : '#f3e7ea'}`,
+            px: { xs: 2, md: 3 },
+            py: { xs: 1.5, md: 3 },
+            borderTop: `1px solid ${borderColor}`,
             bgcolor: 'background.paper',
             boxShadow: '0 -10px 40px rgba(0,0,0,0.05)',
           }}
@@ -187,7 +187,7 @@ export default function ConfiguratorPage() {
                 sx={{ bgcolor: isDark ? 'rgba(34,197,94,0.15)' : 'rgba(34,197,94,0.1)', color: '#16a34a', fontWeight: 700, fontSize: '0.7rem' }}
               />
               {canProceed && (
-                <Chip icon={<CheckCircle sx={{ fontSize: '14px !important' }} />} label="Config complete" size="small" color="success" variant="outlined" />
+                <Chip icon={<CheckCircle sx={{ fontSize: '14px !important' }} />} label="Config complete" size="small" color="success" variant="outlined" sx={{ display: { xs: 'none', sm: 'inline-flex' } }} />
               )}
             </Stack>
           </Box>
@@ -200,7 +200,7 @@ export default function ConfiguratorPage() {
               startIcon={<ShoppingCart />}
               onClick={handleAddToCart}
               disabled={!canProceed || addingToCart}
-              sx={{ flex: 1, py: 1.5, borderRadius: '0.75rem', fontWeight: 700, fontSize: '0.95rem', boxShadow: '0 8px 20px rgba(239,57,102,0.25)' }}
+              sx={{ flex: 1, py: 1.5, minHeight: 44, borderRadius: '0.75rem', fontWeight: 700, fontSize: '0.95rem', boxShadow: '0 8px 20px rgba(239,57,102,0.25)' }}
             >
               {addingToCart ? 'Adding...' : 'Add to Basket'}
             </Button>
@@ -208,7 +208,7 @@ export default function ConfiguratorPage() {
               <Button
                 variant="outlined"
                 onClick={() => setIsQRModalOpen(true)}
-                sx={{ px: 2, py: 1.5, borderRadius: '0.75rem', borderColor: isDark ? '#48232c' : '#f3e7ea', minWidth: 'auto' }}
+                sx={{ px: 2, py: 1.5, minHeight: 44, borderRadius: '0.75rem', borderColor: borderColor, minWidth: 'auto' }}
               >
                 <QrCode />
               </Button>
@@ -223,7 +223,6 @@ export default function ConfiguratorPage() {
         </Box>
       </Box>
 
-      <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
       <QRCodeModal isOpen={isQRModalOpen} onClose={() => setIsQRModalOpen(false)} mode="display" />
     </Box>
   );
