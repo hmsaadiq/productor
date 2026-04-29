@@ -38,6 +38,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     // Guest items are kept in local state — no clearing on mount
   }, [user]);
 
+  // Fetches the authenticated user's cart from Supabase and syncs it into local state.
   const loadCart = async () => {
     if (!user) return;
     setLoading(true);
@@ -66,6 +67,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   };
 
+  // Persists a new item to Supabase for authenticated users; falls back to local state for guests.
   const addToCart = async (item: Omit<CartItem, 'id'>) => {
     if (!user) {
       // Guest: add to local state only with a temporary ID
@@ -106,6 +108,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems(prev => [...prev, mappedItem]);
   };
 
+  // Deletes an item by ID from Supabase (authenticated) or local state (guest).
   const removeFromCart = async (id: string) => {
     if (!user) {
       // Guest: remove from local state only
@@ -127,6 +130,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems(prev => prev.filter(item => item.id !== id));
   };
 
+  // Updates the quantity of a cart item; rejects values below 1.
   const updateQuantity = async (id: string, quantity: number) => {
     if (quantity < 1) return;
 
@@ -154,6 +158,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     );
   };
 
+  // Removes all items for the current user from Supabase (authenticated) or resets local state (guest).
   const clearCart = async () => {
     if (!user) {
       // Guest: clear local state only
@@ -193,6 +198,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// Custom hook for consuming CartContext; throws if used outside CartProvider.
 export function useCart() {
   const context = useContext(CartContext);
   if (context === undefined) {

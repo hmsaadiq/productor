@@ -3,6 +3,8 @@ export interface CancellationValidation {
   reason?: string;
 }
 
+// Returns whether an order can be cancelled given its current status and the caller's role.
+// Users may only cancel while pending/confirmed; admins have one extra window (in_progress).
 export const canCancelOrder = (
   orderStatus: string,
   userRole: 'user' | 'admin'
